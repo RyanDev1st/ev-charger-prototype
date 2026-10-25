@@ -7,7 +7,7 @@
 <meta name="description" content="Clickable UI prototype for three EV Charger System user scenarios: a driver, a maintenance technician and a fleet manager.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Geist+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
 <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
 <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
@@ -35,7 +35,7 @@
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { -webkit-text-size-adjust: 100%; }
-body { font-family: "Geist", system-ui, sans-serif; background: var(--bg); color: var(--ink);
+body { font-family: "Be Vietnam Pro", system-ui, sans-serif; background: var(--bg); color: var(--ink);
   min-height: 100dvh; display: flex; flex-direction: column; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
 button:disabled { cursor: not-allowed; }
@@ -365,19 +365,19 @@ const VANS = [2310, 2580, 1960, 2740, 2190, 2420, 4710, 2050, 2630, 2280, 2890, 
 
 const SCN = {
   driver: {
-    tab: 'Daniel', initials: 'DO', name: 'Daniel Okafor', role: 'Rideshare driver', device: 'phone',
+    tab: 'Phúc', initials: 'LP', name: 'Lê Văn Phúc', role: 'Rideshare driver', device: 'phone',
     goal: 'It is 2 pm, his battery is at <b>18%</b>, and he has an airport pickup at 4. He needs a charger, fast.',
     outcome: 'Car at 80%, paid for, receipt in his inbox before the 4 pm pickup.',
     steps: [
-      { h: 'Find a charger', s: 'Daniel opens the app and sees the stations around him, each showing how many chargers are free. Riverside Mall is 1.2 km away with 3 of 6 free, so he taps it.', r: dFind },
+      { h: 'Find a charger', s: 'Phúc opens the app and sees the stations around him, each showing how many chargers are free. Riverside Mall is 1.2 km away with 3 of 6 free, so he taps it.', r: dFind },
       { h: 'Reserve charger B4', s: 'The station page lists the price, plug types and opening hours. He picks B4, sets it to stop at 80% and reserves it so nobody grabs the spot.', r: dStation },
       { h: 'Plug in and charge', s: 'At the mall he plugs in and taps Start. From the café he watches the battery climb, the time left and the cost so far.', r: dCharge },
       { h: 'Get the receipt', s: 'At 80% his phone buzzes. He unplugs, gets the receipt and emails it to himself for his expense claim.', r: dReceipt },
     ],
   },
   technician: {
-    tab: 'Marcus', initials: 'ML', name: 'Marcus Lee', role: 'Station maintenance technician', device: 'phone',
-    goal: 'Marcus looks after <b>12 stations</b> in District 7. Monday morning, one of them has a problem.',
+    tab: 'Bảo', initials: 'PB', name: 'Phạm Quốc Bảo', role: 'Station maintenance technician', device: 'phone',
+    goal: 'Bảo looks after <b>12 stations</b> in District 7. Monday morning, one of them has a problem.',
     outcome: 'B2 works again, the repair is on record, and the drivers who reported it have been told.',
     steps: [
       { h: 'Spot the alert', s: 'A red alert sits at the top of his list: two drivers say charger B2 at Riverside Mall stopped halfway through charging.', r: tAlerts },
@@ -387,12 +387,12 @@ const SCN = {
     ],
   },
   fleet: {
-    tab: 'Priya', initials: 'PS', name: 'Priya Sharma', role: 'Fleet manager, GreenLeaf Deliveries', device: 'tablet',
+    tab: 'Hà', initials: 'VH', name: 'Võ Thị Thu Hà', role: 'Fleet manager, GreenLeaf Deliveries', device: 'tablet',
     goal: 'Finance wants October\'s charging costs for all <b>25 vans</b> by the end of the day.',
     outcome: 'Finance has the October report, and every driver starts November with a spending limit.',
     steps: [
       { h: 'Check the month', s: 'The fleet dashboard shows the total spend, energy used and a bar for each van. One bar sticks out.', r: fOverview },
-      { h: 'Look into VAN-07', s: 'VAN-07 cost almost twice the average. Its driver, Tuan, mostly used expensive fast chargers in the city centre.', r: fVan },
+      { h: 'Look into VAN-07', s: 'VAN-07 cost almost twice the average. Its driver, Tuấn, mostly used expensive fast chargers in the city centre.', r: fVan },
       { h: 'Set a budget', s: 'To avoid a repeat, she sets a 3,000,000 VND monthly limit per driver with a warning at 80%.', r: fBudget },
       { h: 'Send the report', s: 'She exports the October report as a PDF and sends it to the finance team.', r: fExport },
     ],
@@ -413,7 +413,7 @@ function status(dark) { return `<div class="notch"></div><div class="statusbar">
 
 function dFind() {
   return `${status()}<div class="app">
-    <div class="app-head"><div><p class="k">Good afternoon, Daniel</p><h2>Chargers near you</h2></div>
+    <div class="app-head"><div><p class="k">Good afternoon, Phúc</p><h2>Chargers near you</h2></div>
       <span class="chip bad"><i class="ph-fill ph-battery-low"></i>18% car</span></div>
     <div class="map" aria-label="Map of District 7 with three charging stations">
       <div class="tiles">${[[26097,15401],[26098,15401],[26097,15402],[26098,15402]].map(([x,y]) => `<img alt="" src="map/${x}-${y}.jpg">`).join('')}</div>
@@ -503,7 +503,7 @@ function dReceipt() {
     <div class="card"><dl class="kv"><dt>Energy</dt><dd class="mono">32.4 kWh</dd><dt>Time</dt><dd class="mono">2:14 to 2:52 pm (38 min)</dd><dt>Price</dt><dd class="mono">9,000 VND per kWh</dd><dt>Paid with</dt><dd>Visa ending 4821</dd></dl>
       <div class="total"><span class="sub">Total</span><b class="mono">291,600 VND</b></div></div>
     <div class="grow"></div>
-    ${d.emailed ? `<p class="sent"><i class="ph-fill ph-check-circle"></i>Sent to daniel.okafor@gmail.com</p>` : ''}
+    ${d.emailed ? `<p class="sent"><i class="ph-fill ph-check-circle"></i>Sent to phuc.levan@gmail.com</p>` : ''}
     <button class="cta ${d.emailed ? 'ghost' : 'pulse'}" data-act="email" ${d.emailed ? 'disabled' : ''}><i class="ph ph-envelope-simple"></i>${d.emailed ? 'Receipt emailed' : 'Email receipt'}</button>
     <button class="cta ghost" data-act="restart">Back to map</button></div>`;
 }
@@ -511,7 +511,7 @@ function dReceipt() {
 /* ---------- Technician ---------- */
 function tAlerts() {
   return `${status()}<div class="app">
-    <div class="app-head"><div><p class="k">Monday, 8:20 am</p><h2>Morning, Marcus</h2></div><span class="av lime" style="width:40px;height:40px;font-size:14px">ML</span></div>
+    <div class="app-head"><div><p class="k">Monday, 8:20 am</p><h2>Morning, Bảo</h2></div><span class="av lime" style="width:40px;height:40px;font-size:14px">PB</span></div>
     <div class="tally"><div><b class="mono" style="color:var(--danger)">1</b><span>Urgent</span></div><div><b class="mono">1</b><span>To check</span></div><div><b class="mono">10</b><span>All good</span></div></div>
     <p class="sub" style="font-weight:600;color:var(--ink);margin-top:4px">Needs you</p>
     <button class="alert urgent" data-act="next"><span class="bar-row" style="justify-content:space-between"><span class="nm">Riverside Mall, charger B2</span><span class="chip bad">Urgent</span></span>
@@ -531,7 +531,7 @@ function tDetail() {
       ${t.oos ? '<span class="chip dim">Out of service</span>' : '<span class="chip bad">Reported faulty</span>'}</div>
     <div class="card"><h3>What drivers said</h3>
       <p class="quote">"Screen went black at 40% and it just stopped."<span>Anh, 8:12 am</span></p>
-      <p class="quote">"Stopped and won't restart. Moved to B4."<span>Hoa, 7:50 am</span></p></div>
+      <p class="quote">"Stopped and won't restart. Moved to B4."<span>Hòa, 7:50 am</span></p></div>
     <div class="card"><dl class="kv"><dt>Last full charge</dt><dd>Sun, 9:40 pm</dd><dt>Charges this week</dt><dd class="mono">61</dd><dt>Last repair</dt><dd>12 Aug</dd></dl></div>
     ${t.oos ? `<div class="card" style="display:flex;gap:10px;align-items:center"><i class="ph-fill ph-prohibit" style="font-size:22px;color:var(--danger)"></i><p class="sub" style="font-size:13.5px">Drivers now see B2 as unavailable. Nobody will be sent here.</p></div>` : ''}
     <div class="grow"></div>
@@ -564,7 +564,7 @@ function tDone() {
     <div class="card"><dl class="kv"><dt>Out of service for</dt><dd class="mono">1 h 52 min</dd><dt>Repair saved</dt><dd>With photo and note</dd><dt>Checklist</dt><dd class="mono">4/4</dd></dl></div>
     <div class="card"><h3>Drivers told it's fixed</h3>
       <p class="quote" style="padding-top:8px">Anh<span>"Charger B2 at Riverside Mall is working again."</span></p>
-      <p class="quote">Hoa<span>Same message, sent 10:44 am</span></p></div>
+      <p class="quote">Hòa<span>Same message, sent 10:44 am</span></p></div>
     <div class="grow"></div>
     <button class="cta ghost" data-act="restart">Back to my stations</button></div>`;
 }
@@ -574,7 +574,7 @@ function fShell(active, body) {
   const items = [['ph-squares-four','Overview'],['ph-van','Vans'],['ph-wallet','Budgets'],['ph-file-text','Reports']];
   return `<div class="fleet"><nav class="side"><div class="brand"><span class="brand-mark"><i class="ph-fill ph-lightning"></i></span>VoltLane Fleet</div>
     ${items.map(([ic, l], i) => `<span class="nav-i ${i === active ? 'on' : ''}"><i class="ph ${ic}"></i>${l}</span>`).join('')}
-    <div class="me-card"><span class="av lime">PS</span><div><b>Priya Sharma</b><p class="sub">GreenLeaf Deliveries</p></div></div></nav>
+    <div class="me-card"><span class="av lime">VH</span><div><b>Võ Thị Thu Hà</b><p class="sub">GreenLeaf Deliveries</p></div></div></nav>
     <section class="main">${body}</section></div>`;
 }
 
@@ -595,11 +595,11 @@ function fOverview() {
 function fVan() {
   const st = [['City Centre Hub (fast)', 14, 100], ['Ben Thanh Fast', 9, 64], ['GreenLeaf depot', 3, 21]];
   return fShell(1, `<div class="main-head"><div class="bar-row"><button class="back" data-act="prev" aria-label="Back"><i class="ph ph-arrow-left"></i></button>
-      <div><p class="sub">Driver: Nguyen Van Tuan</p><h2>VAN-07</h2></div></div><span class="chip warn">1.9x fleet average</span></div>
+      <div><p class="sub">Driver: Nguyễn Văn Tuấn</p><h2>VAN-07</h2></div></div><span class="chip warn">1.9x fleet average</span></div>
     <div class="split"><div class="card"><h3>October spend</h3>
         <div class="vs"><div><b class="mono">4,710,000</b><span class="sub">VAN-07, VND</span></div><div class="muted"><b class="mono">2,450,000</b><span class="sub">Fleet average</span></div></div></div>
       <div class="card"><h3>How it charged</h3><div class="vs"><div><b class="mono">78%</b><span class="sub">at fast chargers</span></div><div class="muted"><b class="mono">26</b><span class="sub">sessions</span></div></div></div></div>
-    <div class="card"><h3>Where Tuan charged</h3><div style="margin-top:8px">
+    <div class="card"><h3>Where Tuấn charged</h3><div style="margin-top:8px">
       ${st.map(([n, c, w], i) => `<div class="hbar"><span>${n}</span><i class="${i === 2 ? 'lo' : ''}" style="width:${w}%;animation-delay:${i * 90}ms"></i><b class="mono">${c}x</b></div>`).join('')}</div></div>
     <div class="card tip"><i class="ph-fill ph-lightbulb"></i><p style="font-size:14px;line-height:1.5">Overnight charging at the depot costs about 40% less per kWh than the city-centre fast chargers.</p></div>
     <div class="row-btns"><button class="cta pulse" data-act="next"><i class="ph ph-wallet"></i>Set driver budgets</button></div>`);
@@ -695,7 +695,7 @@ document.addEventListener('click', e => {
     case 'prev': go(S.step - 1, 'prev'); break;
     case 'restart': S = fresh(S.scn); S.dir = 'prev'; render(); break;
     case 'nope': toast('Not part of this scenario'); break;
-    case 'nope-stop': toast('Daniel lets it run to 80%'); break;
+    case 'nope-stop': toast('Phúc lets it run to 80%'); break;
     case 'port': d.port = v; render(false); break;
     case 'target': d.target = v === 'amt' ? 'amt' : +v; render(false); break;
     case 'reserve': S.step = 2; S.dir = 'next'; S.toast = `${d.port} is held for 15 minutes`; render(); setTimeout(() => { S.toast = null; $('.toast')?.remove(); }, 2200); break;
