@@ -352,7 +352,7 @@ body.print .sheetpage { display: block; zoom: .88; padding: 6px 10px; }
 </main>
 <div class="sheetpage" id="sheetpage"></div>
 
-<footer>Clickable prototype for the EV Charger System user scenarios. Low-fidelity data, nothing is charged or sent. Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, tiles &copy; <a href="https://carto.com/attributions">CARTO</a>.</footer>
+<footer>Clickable prototype for the EV Charger System user scenarios. Low-fidelity data, nothing is charged or sent. Map tiles &copy; Esri, HERE, Garmin and the GIS user community.</footer>
 
 <script>
 const $ = s => document.querySelector(s);
@@ -416,12 +416,12 @@ function dFind() {
     <div class="app-head"><div><p class="k">Good afternoon, Daniel</p><h2>Chargers near you</h2></div>
       <span class="chip bad"><i class="ph-fill ph-battery-low"></i>18% car</span></div>
     <div class="map" aria-label="Map of District 7 with three charging stations">
-      <div class="tiles">${[[26097,15401],[26098,15401],[26097,15402],[26098,15402]].map(([x,y]) => `<img alt="" src="https://a.basemaps.cartocdn.com/rastertiles/voyager/15/${x}/${y}.png">`).join('')}</div>
+      <div class="tiles">${[[26097,15401],[26098,15401],[26097,15402],[26098,15402]].map(([x,y]) => `<img alt="" src="map/${x}-${y}.jpg">`).join('')}</div>
       <span class="me" style="left:178px;top:92px"></span>
       <button class="pin hot" data-act="next" style="left:262px;top:64px"><i class="ph-fill ph-lightning"></i>3 free</button>
       <button class="pin" data-act="nope" style="left:96px;top:190px"><i class="ph-fill ph-lightning"></i>1 free</button>
       <button class="pin full" data-act="nope" style="left:92px;top:58px">Full</button>
-      <span class="attr">&copy; OpenStreetMap, &copy; CARTO</span>
+      <span class="attr">Tiles &copy; Esri</span>
     </div>
     <div class="stack">
       <button class="station target" data-act="next"><span class="nm">Riverside Mall</span><i class="ph ph-caret-right go"></i>
