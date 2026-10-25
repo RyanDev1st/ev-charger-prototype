@@ -1,0 +1,778 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VoltLane Prototype</title>
+<meta name="description" content="Clickable UI prototype for three EV Charger System user scenarios: a driver, a maintenance technician and a fleet manager.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+<style>
+/* Shape rule: buttons and chips are full pills, cards 16px, inputs 12px, devices 44px / 28px. */
+:root {
+  --bg: #f1f2ef; --surface: #fbfbfa; --sunken: #e9eae6; --ink: #17181a; --muted: #5d6066;
+  --line: #dcded8; --accent: #c6f02f; --accent-ink: #1b2500; --accent-text: #4a6a00;
+  --danger: #c62f2f; --danger-soft: #fbe6e3; --warn-soft: #f6efd6; --warn-text: #7a5a00;
+  --shadow: 0 30px 80px -30px rgb(40 48 20 / .35), 0 8px 24px -12px rgb(40 48 20 / .25);
+  --frame: #1d1f22;
+  --ease: cubic-bezier(.16, 1, .3, 1);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1011; --surface: #191a1c; --sunken: #222326; --ink: #ecedea; --muted: #a2a5ab;
+    --line: #2d2f33; --accent-text: #c6f02f; --danger: #ff6b5e; --danger-soft: #3a1f1d;
+    --warn-soft: #36301a; --warn-text: #f0cf6a; --shadow: 0 30px 80px -30px rgb(0 0 0 / .7); --frame: #050506;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1011; --surface: #191a1c; --sunken: #222326; --ink: #ecedea; --muted: #a2a5ab;
+  --line: #2d2f33; --accent-text: #c6f02f; --danger: #ff6b5e; --danger-soft: #3a1f1d;
+  --warn-soft: #36301a; --warn-text: #f0cf6a; --shadow: 0 30px 80px -30px rgb(0 0 0 / .7); --frame: #050506;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body { font-family: "Geist", system-ui, sans-serif; background: var(--bg); color: var(--ink);
+  min-height: 100dvh; display: flex; flex-direction: column; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+.mono { font-family: "Geist Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+
+/* Top bar */
+.top { height: 64px; display: flex; align-items: center; gap: 24px; padding: 0 24px;
+  border-bottom: 1px solid var(--line); background: var(--bg); position: sticky; top: 0; z-index: 20; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; letter-spacing: -.02em; white-space: nowrap; }
+.brand-mark { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: var(--accent-ink);
+  display: grid; place-items: center; font-size: 17px; }
+.tabs { display: flex; gap: 6px; margin-left: auto; overflow-x: auto; scrollbar-width: none; }
+.tab { display: flex; align-items: center; gap: 8px; padding: 7px 14px 7px 7px; border-radius: 999px;
+  border: 1px solid var(--line); white-space: nowrap; font-size: 14px; color: var(--muted);
+  transition: background .25s var(--ease), color .25s var(--ease), border-color .25s var(--ease); }
+.tab:hover { color: var(--ink); border-color: var(--muted); }
+.tab[aria-selected="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.tab .av { width: 26px; height: 26px; font-size: 11px; }
+.theme-btn { width: 38px; height: 38px; border-radius: 999px; border: 1px solid var(--line); display: grid; place-items: center; font-size: 18px; flex: none; }
+
+/* Stage */
+.stage { flex: 1; display: grid; grid-template-columns: minmax(300px, 380px) 1fr; gap: 40px;
+  max-width: 1480px; width: 100%; margin: 0 auto; padding: 28px 24px 24px; align-items: start; }
+.rail { position: sticky; top: 92px; }
+.who { display: flex; gap: 14px; align-items: center; }
+.av { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; font-weight: 600;
+  background: var(--sunken); color: var(--ink); flex: none; }
+.av.lime { background: var(--accent); color: var(--accent-ink); }
+.who h1 { font-size: 26px; letter-spacing: -.03em; line-height: 1.1; }
+.who p { color: var(--muted); font-size: 14px; margin-top: 3px; }
+.goal { margin: 20px 0 22px; font-size: 15px; line-height: 1.5; color: var(--ink); max-width: 46ch; }
+.goal b { font-weight: 600; }
+.steps { list-style: none; display: grid; gap: 4px; }
+.step-btn { width: 100%; text-align: left; display: grid; grid-template-columns: 28px 1fr; gap: 12px; padding: 12px 12px;
+  border-radius: 16px; transition: background .3s var(--ease); }
+.step-btn:hover { background: var(--sunken); }
+.step-btn .n { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--line); display: grid; place-items: center;
+  font-size: 12px; color: var(--muted); transition: all .3s var(--ease); }
+.step-btn .h { font-weight: 600; font-size: 15px; padding-top: 4px; }
+.step-btn .s { grid-column: 2; font-size: 14px; line-height: 1.55; color: var(--muted); display: none; }
+.step-btn[aria-current="step"] { background: var(--surface); box-shadow: 0 1px 0 var(--line), 0 0 0 1px var(--line); }
+.step-btn[aria-current="step"] .s { display: block; }
+.step-btn[aria-current="step"] .n { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.step-btn.done .n { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.outcome { margin-top: 18px; padding: 14px 16px; border-radius: 16px; border: 1px dashed var(--line); font-size: 14px; line-height: 1.5; color: var(--muted); }
+.outcome.reached { border-style: solid; border-color: var(--accent-text); color: var(--ink); }
+.outcome b { color: var(--ink); }
+.rail-nav { display: flex; gap: 8px; margin-top: 16px; }
+.hint { font-size: 13px; color: var(--muted); margin-top: 14px; display: flex; gap: 8px; align-items: center; }
+
+/* Device */
+.device-wrap { display: flex; justify-content: center; align-items: flex-start; min-width: 0; }
+.device-box { position: relative; }
+.device { position: absolute; top: 0; left: 0; transform-origin: top left; background: var(--frame);
+  padding: 12px; border-radius: 44px; box-shadow: var(--shadow); }
+.device.phone { width: 390px; height: 800px; }
+.device.tablet { width: 1060px; height: 700px; border-radius: 28px; padding: 14px; }
+.screen { position: relative; width: 100%; height: 100%; border-radius: 34px; overflow: hidden; background: var(--bg); }
+.tablet .screen { border-radius: 16px; }
+.notch { position: absolute; top: 10px; left: 50%; translate: -50% 0; width: 96px; height: 26px; border-radius: 999px; background: var(--frame); z-index: 6; }
+.statusbar { height: 46px; display: flex; justify-content: space-between; align-items: center; padding: 6px 26px 0; font-size: 14px; font-weight: 600; }
+.statusbar span:last-child { display: flex; gap: 5px; font-size: 16px; }
+
+.view { position: absolute; inset: 0; display: flex; flex-direction: column; }
+.view.in-next { animation: inNext .45s var(--ease); }
+.view.in-prev { animation: inPrev .45s var(--ease); }
+@keyframes inNext { from { transform: translateX(24px); opacity: 0; } }
+@keyframes inPrev { from { transform: translateX(-24px); opacity: 0; } }
+
+.app { flex: 1; overflow-y: auto; padding: 4px 18px 18px; display: flex; flex-direction: column; gap: 14px; scrollbar-width: none; }
+.app::-webkit-scrollbar { display: none; }
+.app-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding-top: 6px; }
+.app-head .k { font-size: 14px; color: var(--muted); }
+.app-head h2 { font-size: 26px; letter-spacing: -.03em; line-height: 1.15; margin-top: 2px; }
+.back { width: 40px; height: 40px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); display: grid; place-items: center; font-size: 18px; flex: none; }
+.bar-row { display: flex; align-items: center; gap: 12px; }
+.chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+.chip.ok { background: var(--accent); color: var(--accent-ink); }
+.chip.bad { background: var(--danger-soft); color: var(--danger); }
+.chip.warn { background: var(--warn-soft); color: var(--warn-text); }
+.chip.dim { background: var(--sunken); color: var(--muted); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
+.card h3 { font-size: 15px; font-weight: 600; }
+.sub { font-size: 13px; color: var(--muted); }
+.kv { display: grid; grid-template-columns: 1fr auto; row-gap: 10px; font-size: 14px; }
+.kv dt { color: var(--muted); }
+.kv dd { font-weight: 600; text-align: right; }
+.grow { flex: 1; }
+.cta { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 54px; border-radius: 999px;
+  background: var(--accent); color: var(--accent-ink); font-weight: 600; font-size: 16px; white-space: nowrap;
+  transition: transform .15s var(--ease), opacity .2s; }
+.cta:active:not(:disabled) { transform: scale(.98); }
+.cta:disabled { background: var(--sunken); color: var(--muted); }
+.cta.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--line); }
+.cta.danger { background: transparent; color: var(--danger); border: 1.5px solid var(--danger); }
+.cta.dark { background: var(--ink); color: var(--bg); }
+.cta.pulse:not(:disabled) { animation: pulse 2.4s var(--ease) infinite; }
+@keyframes pulse { 0%, 70%, 100% { box-shadow: 0 0 0 0 rgb(198 240 47 / 0); } 35% { box-shadow: 0 0 0 7px rgb(198 240 47 / .35); } }
+.stack { display: grid; gap: 10px; }
+
+/* Map */
+.map { position: relative; height: 230px; border-radius: 16px; overflow: hidden; background: var(--sunken); border: 1px solid var(--line); flex: none; }
+.tiles { position: absolute; display: grid; grid-template-columns: 256px 256px; left: -95px; top: -80px; }
+.tiles img { width: 256px; height: 256px; display: block; }
+:root[data-theme="dark"] .tiles img { filter: invert(.92) hue-rotate(180deg) saturate(.4) brightness(.9); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tiles img { filter: invert(.92) hue-rotate(180deg) saturate(.4) brightness(.9); } }
+.me { position: absolute; width: 16px; height: 16px; border-radius: 50%; background: #2f6bff; border: 3px solid #fff; box-shadow: 0 0 0 8px rgb(47 107 255 / .2); }
+.pin { position: absolute; translate: -50% -100%; display: flex; align-items: center; gap: 4px; padding: 5px 10px 5px 6px;
+  border-radius: 999px; background: var(--ink); color: var(--bg); font-size: 12.5px; font-weight: 600; box-shadow: 0 6px 16px -6px rgb(0 0 0 / .5); }
+.pin i { font-size: 15px; }
+.pin.hot { background: var(--accent); color: var(--accent-ink); }
+.pin.full { background: var(--surface); color: var(--muted); border: 1px solid var(--line); }
+.attr { position: absolute; right: 6px; bottom: 4px; font-size: 9.5px; color: #333; background: rgb(255 255 255 / .75); padding: 1px 5px; border-radius: 6px; }
+.station { width: 100%; text-align: left; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center;
+  padding: 14px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); transition: border-color .2s, transform .15s var(--ease); }
+.station:hover { border-color: var(--muted); }
+.station:active { transform: scale(.99); }
+.station.target { border-color: var(--accent-text); box-shadow: 0 0 0 3px rgb(198 240 47 / .3); }
+.station .nm { font-weight: 600; font-size: 15.5px; }
+.station .sub { grid-column: 1; }
+.station i.go { grid-row: 1 / 3; grid-column: 2; font-size: 18px; color: var(--muted); }
+
+/* Charger grid */
+.ports { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+.port { padding: 10px; border-radius: 16px; border: 1.5px solid var(--line); text-align: left; background: var(--bg); transition: all .2s var(--ease); }
+.port b { display: block; font-size: 16px; }
+.port span { font-size: 11.5px; color: var(--muted); }
+.port:disabled { opacity: .55; }
+.port.free:hover { border-color: var(--muted); }
+.port[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--bg); }
+.port[aria-pressed="true"] span { color: var(--accent); }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--sunken); border-radius: 999px; padding: 4px; margin-top: 10px; }
+.seg button { height: 36px; border-radius: 999px; font-size: 14px; font-weight: 500; color: var(--muted); transition: all .2s var(--ease); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgb(0 0 0 / .12); font-weight: 600; }
+
+/* Charging */
+.ring-wrap { position: relative; width: 230px; height: 230px; margin: 4px auto 0; }
+.ring-wrap svg { width: 100%; height: 100%; rotate: -90deg; }
+.ring-wrap circle { fill: none; stroke-width: 16; }
+.ring-bg { stroke: var(--sunken); }
+.ring-fg { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset .3s linear; }
+.ring-mid { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+.ring-mid b { font-size: 54px; letter-spacing: -.04em; line-height: 1; }
+.ring-mid span { font-size: 13px; color: var(--muted); margin-top: 6px; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat { padding: 12px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); }
+.stat span { font-size: 11.5px; color: var(--muted); display: block; }
+.stat b { font-size: 16px; display: block; margin-top: 4px; }
+.held { text-align: center; padding: 22px 14px; }
+.held .big { font-size: 56px; letter-spacing: -.04em; font-weight: 600; line-height: 1; margin: 8px 0; }
+.bolt { font-size: 30px; width: 64px; height: 64px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; margin: 0 auto; }
+.bolt.live { animation: breathe 1.8s var(--ease) infinite; }
+@keyframes breathe { 50% { transform: scale(1.08); } }
+
+/* Notification + toast + sheet */
+.notif { position: absolute; left: 10px; right: 10px; top: 48px; z-index: 8; padding: 12px 14px; border-radius: 22px;
+  background: var(--ink); color: var(--bg); display: grid; grid-template-columns: 36px 1fr; gap: 10px; align-items: center;
+  animation: drop .6s var(--ease); box-shadow: var(--shadow); }
+.notif .ic { width: 36px; height: 36px; border-radius: 10px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-size: 18px; }
+.notif b { font-size: 14px; display: block; } .notif span { font-size: 13px; opacity: .75; }
+@keyframes drop { from { transform: translateY(-120%); } }
+.toast { position: absolute; left: 50%; bottom: 96px; translate: -50% 0; z-index: 9; background: var(--ink); color: var(--bg);
+  padding: 10px 16px; border-radius: 999px; font-size: 13.5px; font-weight: 500; white-space: nowrap; display: flex; gap: 8px; align-items: center;
+  animation: rise .4s var(--ease); }
+.toast i { color: var(--accent); }
+@keyframes rise { from { transform: translateY(16px); opacity: 0; } }
+.scrim { position: absolute; inset: 0; background: rgb(10 10 10 / .45); z-index: 7; animation: fade .3s; }
+@keyframes fade { from { opacity: 0; } }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 8; background: var(--surface); border-radius: 28px 28px 0 0;
+  padding: 10px 20px 26px; animation: up .45s var(--ease); display: grid; gap: 12px; }
+.sheet::before { content: ""; width: 40px; height: 5px; border-radius: 999px; background: var(--line); justify-self: center; margin-bottom: 6px; }
+.sheet h3 { font-size: 20px; letter-spacing: -.02em; }
+.sheet p { font-size: 14.5px; color: var(--muted); line-height: 1.5; }
+@keyframes up { from { transform: translateY(100%); } }
+
+/* Receipt / success */
+.done-mark { width: 76px; height: 76px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-size: 38px; margin: 18px auto 4px; animation: pop .6s var(--ease); }
+@keyframes pop { from { transform: scale(.4); opacity: 0; } }
+.center { text-align: center; }
+.total { display: flex; justify-content: space-between; align-items: baseline; padding-top: 12px; margin-top: 12px; border-top: 1px dashed var(--line); }
+.total b { font-size: 24px; letter-spacing: -.02em; }
+.sent { display: flex; align-items: center; gap: 8px; justify-content: center; font-size: 14px; color: var(--accent-text); font-weight: 600; animation: rise .4s var(--ease); }
+
+/* Technician */
+.alert { width: 100%; text-align: left; display: grid; gap: 6px; padding: 14px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); transition: transform .15s var(--ease), border-color .2s; }
+.alert.urgent { border-color: var(--danger); box-shadow: 0 0 0 3px var(--danger-soft); }
+.alert:active { transform: scale(.99); }
+.alert .nm { font-weight: 600; font-size: 15.5px; }
+.tally { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.tally div { padding: 12px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); }
+.tally b { font-size: 24px; display: block; letter-spacing: -.03em; }
+.tally span { font-size: 12px; color: var(--muted); }
+.quote { padding: 10px 0; border-top: 1px solid var(--line); font-size: 14px; line-height: 1.45; }
+.quote:first-of-type { border-top: 0; padding-top: 4px; }
+.quote span { display: block; font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+.check { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); font-size: 15px; text-align: left; }
+.check:first-of-type { border-top: 0; }
+.box { width: 26px; height: 26px; border-radius: 8px; border: 1.5px solid var(--line); display: grid; place-items: center; font-size: 16px; color: transparent; transition: all .2s var(--ease); flex: none; }
+.check[aria-checked="true"] .box { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.check[aria-checked="true"] .lbl { color: var(--muted); text-decoration: line-through; }
+.photo { width: 100%; height: 86px; border-radius: 12px; border: 1.5px dashed var(--line); display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-size: 14px; }
+.photo.has { border-style: solid; justify-content: flex-start; padding: 8px; gap: 12px; color: var(--ink); }
+.photo img { width: 68px; height: 68px; border-radius: 10px; object-fit: cover; }
+label.lbl-top { font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px; }
+textarea, input[type="email"] { width: 100%; font: inherit; font-size: 14.5px; color: var(--ink); background: var(--bg); border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px; resize: none; }
+textarea:focus, input:focus { outline: none; border-color: var(--accent-text); }
+.help { font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+
+/* Fleet (tablet) */
+.fleet { display: grid; grid-template-columns: 200px 1fr; height: 100%; }
+.side { border-right: 1px solid var(--line); padding: 20px 14px; display: flex; flex-direction: column; gap: 4px; background: var(--surface); }
+.side .brand { font-size: 16px; margin: 0 6px 18px; }
+.side .brand-mark { width: 26px; height: 26px; font-size: 14px; }
+.nav-i { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 999px; font-size: 14.5px; color: var(--muted); }
+.nav-i i { font-size: 18px; }
+.nav-i.on { background: var(--ink); color: var(--bg); }
+.side .me-card { margin-top: auto; display: flex; gap: 10px; align-items: center; font-size: 13px; padding: 6px; }
+.side .me-card .av { width: 34px; height: 34px; font-size: 12px; }
+.main { padding: 24px 28px; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; }
+.main-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; }
+.main-head h2 { font-size: 30px; letter-spacing: -.03em; }
+.kpis { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 12px; }
+.kpi { padding: 16px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); }
+.kpi.lead { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.kpi span { font-size: 12.5px; color: var(--muted); display: block; }
+.kpi.lead span { color: color-mix(in srgb, var(--bg) 65%, transparent); }
+.kpi b { display: block; font-size: 24px; letter-spacing: -.03em; margin-top: 6px; }
+.kpi small { font-size: 13px; font-weight: 500; opacity: .7; }
+.chart-card { padding: 18px; }
+.chart { display: flex; align-items: flex-end; gap: 5px; height: 190px; margin-top: 14px; position: relative; }
+.chart .avg { position: absolute; left: 0; right: 0; border-top: 1.5px dashed var(--muted); opacity: .6; }
+.chart .avg span { position: absolute; right: 0; top: -20px; font-size: 11.5px; color: var(--muted); }
+.b { flex: 1; border-radius: 6px 6px 3px 3px; background: var(--line); transform-origin: bottom; animation: grow .7s var(--ease) both; animation-delay: calc(var(--i) * 18ms); position: relative; }
+.b.hi { background: var(--accent); cursor: pointer; }
+.b.hi::after { content: "VAN-07"; position: absolute; top: -22px; left: 50%; translate: -50% 0; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+.b:hover { filter: brightness(.92); }
+@keyframes grow { from { transform: scaleY(0); } }
+.xaxis { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); margin-top: 8px; }
+.split { display: grid; grid-template-columns: 1.3fr 1fr; gap: 14px; }
+.vs { display: flex; gap: 28px; align-items: flex-end; margin-top: 10px; }
+.vs b { font-size: 34px; letter-spacing: -.04em; display: block; }
+.vs .muted b { color: var(--muted); font-size: 24px; }
+.hbar { display: grid; grid-template-columns: 150px 1fr 40px; align-items: center; gap: 10px; font-size: 13.5px; padding: 7px 0; }
+.hbar i { display: block; height: 10px; border-radius: 999px; background: var(--ink); transform-origin: left; animation: growx .7s var(--ease) both; }
+.hbar i.lo { background: var(--accent); }
+@keyframes growx { from { transform: scaleX(0); } }
+.tip { display: flex; gap: 12px; align-items: flex-start; background: var(--warn-soft); color: var(--warn-text); border: 0; }
+.tip i { font-size: 20px; }
+.form-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; align-items: start; }
+.limit { font-size: 40px; letter-spacing: -.04em; font-weight: 600; margin: 4px 0 10px; }
+input[type="range"] { width: 100%; accent-color: var(--ink); height: 28px; }
+.toggle { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 0; border-top: 1px solid var(--line); text-align: left; font-size: 14.5px; }
+.toggle:first-of-type { border-top: 0; padding-top: 4px; }
+.sw { width: 46px; height: 28px; border-radius: 999px; background: var(--line); position: relative; transition: background .25s var(--ease); flex: none; }
+.sw::after { content: ""; position: absolute; left: 3px; top: 3px; width: 22px; height: 22px; border-radius: 50%; background: var(--surface); box-shadow: 0 1px 3px rgb(0 0 0 / .25); transition: transform .25s var(--ease); }
+.toggle[aria-checked="true"] .sw { background: var(--ink); }
+.toggle[aria-checked="true"] .sw::after { transform: translateX(18px); }
+.radio-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.radio { padding: 14px; border-radius: 16px; border: 1.5px solid var(--line); text-align: left; display: flex; gap: 12px; align-items: center; }
+.radio i { font-size: 26px; }
+.radio[aria-checked="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.radio b { display: block; font-size: 14.5px; } .radio span { font-size: 12.5px; color: var(--muted); }
+.row-btns { display: flex; gap: 10px; }
+.row-btns .cta { width: auto; padding: 0 26px; }
+.skel { height: 14px; border-radius: 999px; background: linear-gradient(90deg, var(--sunken) 0%, var(--line) 50%, var(--sunken) 100%); background-size: 200% 100%; animation: shimmer 1.1s linear infinite; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+.preview { display: grid; gap: 10px; padding: 16px; }
+
+footer { padding: 16px 24px 22px; font-size: 12.5px; color: var(--muted); text-align: center; }
+footer a { color: inherit; }
+
+@media (max-width: 960px) {
+  .stage { grid-template-columns: 1fr; gap: 24px; padding: 20px 16px; }
+  .rail { position: static; }
+  .top { padding: 0 16px; gap: 12px; }
+  .tab .nm { display: none; }
+  .tab { padding: 4px; }
+}
+@media (max-width: 520px) { .brand span { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+/* Print sheets, used to make the PDF copies (?print=driver etc.) */
+body.print { background: var(--bg); }
+body.print .top, body.print .stage, body.print footer { display: none; }
+.sheetpage { display: none; padding: 18px 22px; }
+body.print .sheetpage { display: block; }
+.sheetpage h1 { font-size: 22px; letter-spacing: -.02em; }
+.sheetpage .meta { font-size: 13px; color: var(--muted); margin: 4px 0 16px; }
+.frames { display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; }
+.frame { width: 250px; }
+.frame.wide { width: 520px; }
+.frame-cap { font-size: 12px; margin-top: 8px; color: var(--muted); line-height: 1.4; }
+.frame-cap b { color: var(--ink); display: block; font-size: 12.5px; }
+.mini { position: relative; overflow: hidden; border-radius: 30px; background: var(--frame); padding: 8px; }
+.mini .scaled { transform-origin: top left; position: absolute; top: 8px; left: 8px; }
+@page { size: A4 landscape; margin: 8mm; }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="brand-mark"><i class="ph-fill ph-lightning"></i></span><span>VoltLane</span></div>
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+  <button class="theme-btn" id="theme" aria-label="Switch light or dark mode"><i class="ph ph-circle-half"></i></button>
+</header>
+
+<main class="stage">
+  <aside class="rail" id="rail"></aside>
+  <section class="device-wrap" id="wrap">
+    <div class="device-box" id="box"><div class="device" id="device"><div class="screen" id="screen"></div></div></div>
+  </section>
+</main>
+<div class="sheetpage" id="sheetpage"></div>
+
+<footer>Clickable prototype for the EV Charger System user scenarios. Low-fidelity data, nothing is charged or sent. Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors.</footer>
+
+<script>
+const $ = s => document.querySelector(s);
+const vnd = n => Math.round(n).toLocaleString('en-US') + ' VND';
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Spend per van in thousands of VND. Sums to 61,250 (61,250,000 VND). Index 6 is VAN-07.
+const VANS = [2310, 2580, 1960, 2740, 2190, 2420, 4710, 2050, 2630, 2280, 2890, 1870, 2460,
+  2350, 2120, 2710, 2240, 2530, 1990, 2660, 2380, 2170, 2470, 2600, 1940];
+
+const SCN = {
+  driver: {
+    tab: 'Daniel', initials: 'DO', name: 'Daniel Okafor', role: 'Rideshare driver', device: 'phone',
+    goal: 'It is 2 pm, his battery is at <b>18%</b>, and he has an airport pickup at 4. He needs a charger, fast.',
+    outcome: 'Car at 80%, paid for, receipt in his inbox before the 4 pm pickup.',
+    steps: [
+      { h: 'Find a charger', s: 'Daniel opens the app and sees the stations around him, each showing how many chargers are free. Riverside Mall is 1.2 km away with 3 of 6 free, so he taps it.', r: dFind },
+      { h: 'Reserve charger B4', s: 'The station page lists the price, plug types and opening hours. He picks B4, sets it to stop at 80% and reserves it so nobody grabs the spot.', r: dStation },
+      { h: 'Plug in and charge', s: 'At the mall he plugs in and taps Start. From the café he watches the battery climb, the time left and the cost so far.', r: dCharge },
+      { h: 'Get the receipt', s: 'At 80% his phone buzzes. He unplugs, gets the receipt and emails it to himself for his expense claim.', r: dReceipt },
+    ],
+  },
+  technician: {
+    tab: 'Marcus', initials: 'ML', name: 'Marcus Lee', role: 'Station maintenance technician', device: 'phone',
+    goal: 'Marcus looks after <b>12 stations</b> in District 7. Monday morning, one of them has a problem.',
+    outcome: 'B2 works again, the repair is on record, and the drivers who reported it have been told.',
+    steps: [
+      { h: 'Spot the alert', s: 'A red alert sits at the top of his list: two drivers say charger B2 at Riverside Mall stopped halfway through charging.', r: tAlerts },
+      { h: 'Take B2 out of service', s: 'He reads the reports and marks B2 out of service, so drivers stop being sent to a broken charger.', r: tDetail },
+      { h: 'Log the repair', s: 'On site he swaps a loose display cable, ticks off the checklist, adds a photo and a short note.', r: tRepair },
+      { h: 'Back in service', s: 'He puts B2 back in service. The two drivers who reported it get a message saying it is fixed.', r: tDone },
+    ],
+  },
+  fleet: {
+    tab: 'Priya', initials: 'PS', name: 'Priya Sharma', role: 'Fleet manager, GreenLeaf Deliveries', device: 'tablet',
+    goal: 'Finance wants October\'s charging costs for all <b>25 vans</b> by the end of the day.',
+    outcome: 'Finance has the October report, and every driver starts November with a spending limit.',
+    steps: [
+      { h: 'Check the month', s: 'The fleet dashboard shows the total spend, energy used and a bar for each van. One bar sticks out.', r: fOverview },
+      { h: 'Look into VAN-07', s: 'VAN-07 cost almost twice the average. Its driver, Tuan, mostly used expensive fast chargers in the city centre.', r: fVan },
+      { h: 'Set a budget', s: 'To avoid a repeat, she sets a 3,000,000 VND monthly limit per driver with a warning at 80%.', r: fBudget },
+      { h: 'Send the report', s: 'She exports the October report as a PDF and sends it to the finance team.', r: fExport },
+    ],
+  },
+};
+
+let S, timers = [];
+function fresh(scn) {
+  return { scn, step: 0, dir: 'next', toast: null,
+    d: { port: null, target: 80, charging: false, pct: 18, held: 900, done: false, emailed: false },
+    t: { oos: false, sheet: false, checks: [false, false, false, false], photo: false },
+    f: { limit: 3000000, warn: true, tell: true, saved: false, format: 'pdf', email: 'finance@greenleaf.vn', sending: false, sent: false } };
+}
+function clearTimers() { timers.forEach(clearInterval); timers = []; }
+
+/* ---------- Driver ---------- */
+function status(dark) { return `<div class="notch"></div><div class="statusbar"><span>2:05</span><span><i class="ph-fill ph-cell-signal-high"></i><i class="ph-fill ph-wifi-high"></i><i class="ph-fill ph-battery-high"></i></span></div>`; }
+
+function dFind() {
+  return `${status()}<div class="app">
+    <div class="app-head"><div><p class="k">Good afternoon, Daniel</p><h2>Chargers near you</h2></div>
+      <span class="chip bad"><i class="ph-fill ph-battery-low"></i>18% car</span></div>
+    <div class="map" aria-label="Map of District 7 with three charging stations">
+      <div class="tiles">${[[26097,15401],[26098,15401],[26097,15402],[26098,15402]].map(([x,y]) => `<img alt="" src="https://tile.openstreetmap.org/15/${x}/${y}.png">`).join('')}</div>
+      <span class="me" style="left:178px;top:92px"></span>
+      <button class="pin hot" data-act="next" style="left:262px;top:64px"><i class="ph-fill ph-lightning"></i>3 free</button>
+      <button class="pin" data-act="nope" style="left:96px;top:190px"><i class="ph-fill ph-lightning"></i>1 free</button>
+      <button class="pin full" data-act="nope" style="left:92px;top:58px">Full</button>
+      <span class="attr">&copy; OpenStreetMap</span>
+    </div>
+    <div class="stack">
+      <button class="station target" data-act="next"><span class="nm">Riverside Mall</span><i class="ph ph-caret-right go"></i>
+        <span class="sub"><span class="chip ok">3 of 6 free</span> &nbsp;1.2 km, 4 min drive</span></button>
+      <button class="station" data-act="nope"><span class="nm">Lotus Tower car park</span><i class="ph ph-caret-right go"></i>
+        <span class="sub"><span class="chip warn">1 of 4 free</span> &nbsp;2.8 km, 9 min drive</span></button>
+      <button class="station" data-act="nope"><span class="nm">Phu My Hung Plaza</span><i class="ph ph-caret-right go"></i>
+        <span class="sub"><span class="chip dim">Full</span> &nbsp;2.1 km, 7 min drive</span></button>
+    </div></div>`;
+}
+
+function dStation() {
+  const d = S.d;
+  const ports = [['B1','free','Free'],['B2','oos','Out of service'],['B3','busy','In use, 24 min'],['B4','free','Free'],['B5','busy','In use, 6 min'],['B6','free','Free']];
+  const est = { 80: [32.4, 38], 100: [42.8, 61], amt: [22.2, 26] }[d.target];
+  return `${status()}<div class="app">
+    <div class="bar-row"><button class="back" data-act="prev" aria-label="Back"><i class="ph ph-arrow-left"></i></button>
+      <div><h2 style="font-size:22px;letter-spacing:-.02em">Riverside Mall</h2><p class="sub">1.2 km away, open 6:00 to 23:00</p></div></div>
+    <div class="card"><dl class="kv"><dt>Price</dt><dd class="mono">9,000 VND per kWh</dd><dt>Plugs</dt><dd>CCS2 and Type 2</dd><dt>Parking</dt><dd>Free for 2 hours</dd></dl></div>
+    <div class="card"><h3>Pick a charger</h3>
+      <div class="ports">${ports.map(([id, st, lab]) => `<button class="port ${st}" ${st === 'free' ? `data-act="port" data-v="${id}"` : 'disabled'} aria-pressed="${d.port === id}"><b>${id}</b><span>${lab}</span></button>`).join('')}</div></div>
+    <div class="card"><h3>Stop charging at</h3>
+      <div class="seg">${[['80','80%'],['100','Full'],['amt','200k VND']].map(([v, l]) => `<button data-act="target" data-v="${v}" aria-pressed="${String(d.target) === v}">${l}</button>`).join('')}</div>
+      <p class="sub" style="margin-top:10px">About <span class="mono">${est[0]} kWh</span>, ${est[1]} min, <span class="mono">${vnd(est[0] * 9000)}</span></p></div>
+    <div class="grow"></div>
+    <button class="cta ${d.port ? 'pulse' : ''}" data-act="reserve" ${d.port ? '' : 'disabled'}>${d.port ? `Reserve ${d.port} for 15 min` : 'Pick a free charger'}</button>
+  </div>`;
+}
+
+function dCharge() {
+  const d = S.d, port = d.port || 'B4';
+  if (!d.charging) {
+    const m = String(Math.floor(d.held / 60)).padStart(2, '0'), s = String(d.held % 60).padStart(2, '0');
+    return `${status()}<div class="app">
+      <div class="bar-row"><button class="back" data-act="prev" aria-label="Back"><i class="ph ph-arrow-left"></i></button>
+        <div><h2 style="font-size:22px;letter-spacing:-.02em">Charger ${port}</h2><p class="sub">Riverside Mall, level B1</p></div></div>
+      <div class="card held"><p class="sub">Held for you for</p><p class="big mono" id="held">${m}:${s}</p><p class="sub">Drive over and plug in. Nobody else can start on ${port}.</p></div>
+      <div class="card"><dl class="kv"><dt>Stops at</dt><dd>${d.target === 100 ? 'Full' : d.target === 'amt' ? '200,000 VND' : '80%'}</dd><dt>Pays with</dt><dd>Visa ending 4821</dd></dl></div>
+      <div class="grow"></div>
+      <p class="sub center"><i class="ph ph-plug"></i> Cable plugged in</p>
+      <button class="cta pulse" data-act="start"><i class="ph-fill ph-lightning"></i>Start charging</button></div>`;
+  }
+  return `${status()}<div class="app">
+    <div class="bar-row"><div><p class="k" style="font-size:14px;color:var(--muted)">Charging at ${port}, Riverside Mall</p><h2 style="font-size:22px;letter-spacing:-.02em" id="ch-title">${d.done ? 'Done. Unplug when ready' : 'Charging'}</h2></div></div>
+    <div class="ring-wrap"><svg viewBox="0 0 200 200"><circle class="ring-bg" cx="100" cy="100" r="86"/><circle class="ring-fg" id="ring" cx="100" cy="100" r="86" stroke-dasharray="540.35" stroke-dashoffset="${540.35 * (1 - d.pct / 100)}"/></svg>
+      <div class="ring-mid"><b class="mono" id="pct">${Math.round(d.pct)}%</b><span>Target 80%</span></div></div>
+    <div class="stats">
+      <div class="stat"><span>Time left</span><b class="mono" id="left">--</b></div>
+      <div class="stat"><span>Energy</span><b class="mono" id="kwh">--</b></div>
+      <div class="stat"><span>Cost so far</span><b class="mono" id="cost">--</b></div></div>
+    <div class="card" style="display:flex;gap:12px;align-items:center"><span class="bolt ${d.done ? '' : 'live'}" style="width:40px;height:40px;font-size:20px;margin:0"><i class="ph-fill ph-lightning"></i></span>
+      <p class="sub" style="font-size:13.5px">We'll buzz your phone at 80%. Go grab a coffee.</p></div>
+    <div class="grow"></div>
+    ${d.done ? `<button class="cta pulse" data-act="next"><i class="ph ph-receipt"></i>View receipt</button>` : `<button class="cta danger" data-act="nope-stop">Stop charging</button>`}
+  </div>
+  ${d.done ? `<div class="notif" role="status"><span class="ic"><i class="ph-fill ph-lightning"></i></span><div><b>VoltLane: you're at 80%</b><span>Unplug B4 when you're ready. Receipt is waiting.</span></div></div>` : ''}`;
+}
+
+function chargeFigures(p) {
+  const f = (p - 18) / 62;
+  return { left: Math.max(0, Math.round(38 * (1 - f))), kwh: (32.4 * f).toFixed(1), cost: 291600 * f };
+}
+function paintCharge() {
+  const d = S.d, el = id => document.getElementById(id);
+  if (!el('pct')) return;
+  const g = chargeFigures(d.pct);
+  el('pct').textContent = Math.round(d.pct) + '%';
+  el('ring').style.strokeDashoffset = 540.35 * (1 - d.pct / 100);
+  el('left').textContent = g.left + ' min';
+  el('kwh').textContent = g.kwh + ' kWh';
+  el('cost').textContent = Math.round(g.cost / 1000).toLocaleString('en-US') + 'k';
+}
+
+function dReceipt() {
+  const d = S.d;
+  return `${status()}<div class="app">
+    <div class="done-mark"><i class="ph-bold ph-check"></i></div>
+    <div class="center"><h2 style="font-size:24px;letter-spacing:-.03em">Charged to 80%</h2><p class="sub">Riverside Mall, charger ${d.port || 'B4'}, 25 Oct</p></div>
+    <div class="card"><dl class="kv"><dt>Energy</dt><dd class="mono">32.4 kWh</dd><dt>Time</dt><dd class="mono">2:14 to 2:52 pm (38 min)</dd><dt>Price</dt><dd class="mono">9,000 VND per kWh</dd><dt>Paid with</dt><dd>Visa ending 4821</dd></dl>
+      <div class="total"><span class="sub">Total</span><b class="mono">291,600 VND</b></div></div>
+    <div class="grow"></div>
+    ${d.emailed ? `<p class="sent"><i class="ph-fill ph-check-circle"></i>Sent to daniel.okafor@gmail.com</p>` : ''}
+    <button class="cta ${d.emailed ? 'ghost' : 'pulse'}" data-act="email" ${d.emailed ? 'disabled' : ''}><i class="ph ph-envelope-simple"></i>${d.emailed ? 'Receipt emailed' : 'Email receipt'}</button>
+    <button class="cta ghost" data-act="restart">Back to map</button></div>`;
+}
+
+/* ---------- Technician ---------- */
+function tAlerts() {
+  return `${status()}<div class="app">
+    <div class="app-head"><div><p class="k">Monday, 8:20 am</p><h2>Morning, Marcus</h2></div><span class="av lime" style="width:40px;height:40px;font-size:14px">ML</span></div>
+    <div class="tally"><div><b class="mono" style="color:var(--danger)">1</b><span>Urgent</span></div><div><b class="mono">1</b><span>To check</span></div><div><b class="mono">10</b><span>All good</span></div></div>
+    <p class="sub" style="font-weight:600;color:var(--ink);margin-top:4px">Needs you</p>
+    <button class="alert urgent" data-act="next"><span class="bar-row" style="justify-content:space-between"><span class="nm">Riverside Mall, charger B2</span><span class="chip bad">Urgent</span></span>
+      <span class="sub">2 drivers: stopped mid-charge. First report 7:50 am.</span></button>
+    <button class="alert" data-act="nope"><span class="bar-row" style="justify-content:space-between"><span class="nm">Lotus Tower, charger A1</span><span class="chip warn">Check</span></span>
+      <span class="sub">Cable holder is loose. Reported yesterday.</span></button>
+    <p class="sub" style="font-weight:600;color:var(--ink);margin-top:4px">Today's route</p>
+    <div class="card"><dl class="kv"><dt>Riverside Mall</dt><dd>6 chargers</dd><dt>Lotus Tower</dt><dd>4 chargers</dd><dt>Phu My Hung Plaza</dt><dd>8 chargers</dd></dl></div>
+  </div>`;
+}
+
+function tDetail() {
+  const t = S.t;
+  return `${status()}<div class="app">
+    <div class="bar-row"><button class="back" data-act="prev" aria-label="Back"><i class="ph ph-arrow-left"></i></button>
+      <div class="grow"><h2 style="font-size:22px;letter-spacing:-.02em">Charger B2</h2><p class="sub">Riverside Mall, level B1</p></div>
+      ${t.oos ? '<span class="chip dim">Out of service</span>' : '<span class="chip bad">Reported faulty</span>'}</div>
+    <div class="card"><h3>What drivers said</h3>
+      <p class="quote">"Screen went black at 40% and it just stopped."<span>Anh, 8:12 am</span></p>
+      <p class="quote">"Stopped and won't restart. Moved to B4."<span>Hoa, 7:50 am</span></p></div>
+    <div class="card"><dl class="kv"><dt>Last full charge</dt><dd>Sun, 9:40 pm</dd><dt>Charges this week</dt><dd class="mono">61</dd><dt>Last repair</dt><dd>12 Aug</dd></dl></div>
+    ${t.oos ? `<div class="card" style="display:flex;gap:10px;align-items:center"><i class="ph-fill ph-prohibit" style="font-size:22px;color:var(--danger)"></i><p class="sub" style="font-size:13.5px">Drivers now see B2 as unavailable. Nobody will be sent here.</p></div>` : ''}
+    <div class="grow"></div>
+    ${t.oos ? `<button class="cta pulse" data-act="next"><i class="ph ph-wrench"></i>Start repair</button>` : `<button class="cta dark" data-act="sheet"><i class="ph ph-prohibit"></i>Mark out of service</button>`}
+  </div>
+  ${t.sheet ? `<div class="scrim" data-act="sheet-close"></div><div class="sheet" role="dialog" aria-label="Confirm">
+    <h3>Take B2 out of service?</h3><p>Drivers won't see B2 as available until you put it back. Anyone heading there now will be told to pick another charger.</p>
+    <button class="cta dark" data-act="oos">Mark out of service</button><button class="cta ghost" data-act="sheet-close">Cancel</button></div>` : ''}`;
+}
+
+function tRepair() {
+  const t = S.t, labels = ['Power switched off', 'Display cable replaced', 'Test charge finished', 'Bay cleaned up'];
+  const n = t.checks.filter(Boolean).length, ready = n === 4 && t.photo;
+  return `${status()}<div class="app">
+    <div class="bar-row"><button class="back" data-act="prev" aria-label="Back"><i class="ph ph-arrow-left"></i></button>
+      <div class="grow"><h2 style="font-size:22px;letter-spacing:-.02em">Repair B2</h2><p class="sub">On site since 10:05 am</p></div><span class="chip dim mono">${n}/4</span></div>
+    <div class="card">${labels.map((l, i) => `<button class="check" role="checkbox" aria-checked="${t.checks[i]}" data-act="check" data-v="${i}"><span class="box"><i class="ph-bold ph-check"></i></span><span class="lbl">${l}</span></button>`).join('')}</div>
+    <div class="card"><label class="lbl-top">Photo of the fix</label>
+      ${t.photo ? `<div class="photo has"><span class="bolt" style="width:68px;height:68px;border-radius:10px;margin:0;font-size:30px"><i class="ph ph-image"></i></span><div><b style="font-size:14px">new-cable.jpg</b><p class="sub">Added 10:41 am</p></div></div>`
+        : `<button class="photo" data-act="photo"><i class="ph ph-camera" style="font-size:22px"></i>Take a photo</button>`}</div>
+    <div class="card"><label class="lbl-top" for="note">Note</label><textarea id="note" rows="2">Loose display cable. Replaced with a spare from the van.</textarea></div>
+    <button class="cta ${ready ? 'pulse' : ''}" data-act="next" ${ready ? '' : 'disabled'}>${ready ? 'Put back in service' : n < 4 ? `Finish the checklist (${n}/4)` : 'Add a photo first'}</button>
+  </div>`;
+}
+
+function tDone() {
+  return `${status()}<div class="app">
+    <div class="done-mark"><i class="ph-bold ph-check"></i></div>
+    <div class="center"><h2 style="font-size:24px;letter-spacing:-.03em">B2 is available again</h2><p class="sub">Riverside Mall, 10:44 am</p></div>
+    <div class="card"><dl class="kv"><dt>Out of service for</dt><dd class="mono">1 h 52 min</dd><dt>Repair saved</dt><dd>With photo and note</dd><dt>Checklist</dt><dd class="mono">4/4</dd></dl></div>
+    <div class="card"><h3>Drivers told it's fixed</h3>
+      <p class="quote" style="padding-top:8px">Anh<span>"Charger B2 at Riverside Mall is working again."</span></p>
+      <p class="quote">Hoa<span>Same message, sent 10:44 am</span></p></div>
+    <div class="grow"></div>
+    <button class="cta ghost" data-act="restart">Back to my stations</button></div>`;
+}
+
+/* ---------- Fleet manager (tablet) ---------- */
+function fShell(active, body) {
+  const items = [['ph-squares-four','Overview'],['ph-van','Vans'],['ph-wallet','Budgets'],['ph-file-text','Reports']];
+  return `<div class="fleet"><nav class="side"><div class="brand"><span class="brand-mark"><i class="ph-fill ph-lightning"></i></span>VoltLane Fleet</div>
+    ${items.map(([ic, l], i) => `<span class="nav-i ${i === active ? 'on' : ''}"><i class="ph ${ic}"></i>${l}</span>`).join('')}
+    <div class="me-card"><span class="av lime">PS</span><div><b>Priya Sharma</b><p class="sub">GreenLeaf Deliveries</p></div></div></nav>
+    <section class="main">${body}</section></div>`;
+}
+
+function fOverview() {
+  const max = 5000, avg = 2450;
+  return fShell(0, `<div class="main-head"><div><p class="sub">25 vans, 1 to 31 October</p><h2>October charging</h2></div>
+      <button class="cta ghost" style="width:auto;padding:0 20px;height:44px" data-act="nope"><i class="ph ph-calendar-blank"></i>October 2026</button></div>
+    <div class="kpis"><div class="kpi lead"><span>Total spend</span><b class="mono">61,250,000 <small>VND</small></b></div>
+      <div class="kpi"><span>Energy used</span><b class="mono">6,805 <small>kWh</small></b></div>
+      <div class="kpi"><span>Charging sessions</span><b class="mono">742</b></div>
+      <div class="kpi"><span>Average per van</span><b class="mono">2.45M <small>VND</small></b></div></div>
+    <div class="card chart-card"><div class="bar-row" style="justify-content:space-between"><h3>Spend per van</h3><span class="sub">Tap a bar to open the van</span></div>
+      <div class="chart"><div class="avg" style="bottom:${avg / max * 100}%"><span>Average</span></div>
+        ${VANS.map((v, i) => `<div class="b ${i === 6 ? 'hi' : ''}" style="--i:${i};height:${v / max * 100}%" title="VAN-${String(i + 1).padStart(2, '0')}: ${(v * 1000).toLocaleString('en-US')} VND" ${i === 6 ? 'data-act="next" role="button" aria-label="Open VAN-07"' : 'data-act="nope"'}></div>`).join('')}</div>
+      <div class="xaxis"><span>VAN-01</span><span>VAN-13</span><span>VAN-25</span></div></div>`);
+}
+
+function fVan() {
+  const st = [['City Centre Hub (fast)', 14, 100], ['Ben Thanh Fast', 9, 64], ['GreenLeaf depot', 3, 21]];
+  return fShell(1, `<div class="main-head"><div class="bar-row"><button class="back" data-act="prev" aria-label="Back"><i class="ph ph-arrow-left"></i></button>
+      <div><p class="sub">Driver: Nguyen Van Tuan</p><h2>VAN-07</h2></div></div><span class="chip warn">1.9x fleet average</span></div>
+    <div class="split"><div class="card"><h3>October spend</h3>
+        <div class="vs"><div><b class="mono">4,710,000</b><span class="sub">VAN-07, VND</span></div><div class="muted"><b class="mono">2,450,000</b><span class="sub">Fleet average</span></div></div></div>
+      <div class="card"><h3>How it charged</h3><div class="vs"><div><b class="mono">78%</b><span class="sub">at fast chargers</span></div><div class="muted"><b class="mono">26</b><span class="sub">sessions</span></div></div></div></div>
+    <div class="card"><h3>Where Tuan charged</h3><div style="margin-top:8px">
+      ${st.map(([n, c, w], i) => `<div class="hbar"><span>${n}</span><i class="${i === 2 ? 'lo' : ''}" style="width:${w}%;animation-delay:${i * 90}ms"></i><b class="mono">${c}x</b></div>`).join('')}</div></div>
+    <div class="card tip"><i class="ph-fill ph-lightbulb"></i><p style="font-size:14px;line-height:1.5">Overnight charging at the depot costs about 40% less per kWh than the city-centre fast chargers.</p></div>
+    <div class="row-btns"><button class="cta pulse" data-act="next"><i class="ph ph-wallet"></i>Set driver budgets</button></div>`);
+}
+
+function fBudget() {
+  const f = S.f;
+  return fShell(2, `<div class="main-head"><div class="bar-row"><button class="back" data-act="prev" aria-label="Back"><i class="ph ph-arrow-left"></i></button>
+      <div><p class="sub">Applies from 1 November to all 25 drivers</p><h2>Charging budget</h2></div></div></div>
+    <div class="form-grid"><div class="card"><label class="lbl-top" for="limit">Monthly limit per driver</label>
+        <p class="limit mono" id="limit-out">${f.limit.toLocaleString('en-US')} <small style="font-size:18px;color:var(--muted)">VND</small></p>
+        <input type="range" id="limit" min="1500000" max="6000000" step="250000" value="${f.limit}" data-act="limit">
+        <p class="help">October average was 2,450,000 VND. VAN-07 spent 4,710,000 VND.</p></div>
+      <div class="card">
+        <button class="toggle" role="switch" aria-checked="${f.warn}" data-act="tog" data-v="warn"><span>Warn me when a driver reaches 80%</span><span class="sw"></span></button>
+        <button class="toggle" role="switch" aria-checked="${f.tell}" data-act="tog" data-v="tell"><span>Send the driver the same warning</span><span class="sw"></span></button>
+        <button class="toggle" role="switch" aria-checked="false" data-act="nope"><span>Block charging at 100%</span><span class="sw"></span></button></div></div>
+    ${f.saved ? `<div class="card" style="display:flex;gap:12px;align-items:center;border-color:var(--accent-text)"><i class="ph-fill ph-check-circle" style="font-size:22px;color:var(--accent-text)"></i><p style="font-size:14.5px">Saved. All 25 drivers get a ${f.limit.toLocaleString('en-US')} VND limit from 1 November.</p></div>` : ''}
+    <div class="row-btns">${f.saved ? `<button class="cta pulse" data-act="next"><i class="ph ph-export"></i>Export October report</button>`
+      : `<button class="cta dark" data-act="save">Save budget</button>`}</div>`);
+}
+
+function fExport() {
+  const f = S.f;
+  let preview;
+  if (f.sent) preview = `<div class="card" style="display:flex;gap:14px;align-items:center;border-color:var(--accent-text)"><span class="done-mark" style="width:48px;height:48px;font-size:24px;margin:0"><i class="ph-bold ph-check"></i></span>
+      <div><b style="font-size:16px">Report sent</b><p class="sub">October charging report (PDF, 6 pages) sent to ${f.email} at 4:32 pm.</p></div></div>`;
+  else if (f.sending) preview = `<div class="card preview"><div class="skel" style="width:40%"></div><div class="skel"></div><div class="skel" style="width:85%"></div><div class="skel" style="width:60%"></div></div>`;
+  else preview = `<div class="card"><dl class="kv"><dt>Covers</dt><dd>1 to 31 October, 25 vans</dd><dt>Includes</dt><dd>Spend per van, sessions, stations</dd><dt>Total</dt><dd class="mono">61,250,000 VND</dd></dl></div>`;
+  return fShell(3, `<div class="main-head"><div class="bar-row"><button class="back" data-act="prev" aria-label="Back"><i class="ph ph-arrow-left"></i></button>
+      <div><p class="sub">October 2026</p><h2>Export report</h2></div></div></div>
+    <div class="form-grid"><div class="card"><label class="lbl-top">Format</label><div class="radio-row">
+        <button class="radio" role="radio" aria-checked="${f.format === 'pdf'}" data-act="fmt" data-v="pdf"><i class="ph ph-file-pdf"></i><span><b>PDF</b><span>For reading</span></span></button>
+        <button class="radio" role="radio" aria-checked="${f.format === 'xlsx'}" data-act="fmt" data-v="xlsx"><i class="ph ph-file-xls"></i><span><b>Spreadsheet</b><span>For your own sums</span></span></button></div>
+        <div style="margin-top:16px"><label class="lbl-top" for="email">Send to</label><input type="email" id="email" value="${f.email}" ${f.sent ? 'disabled' : ''}>
+        <p class="help">Finance team shared inbox</p></div></div>
+      ${preview}</div>
+    <div class="row-btns">${f.sent ? `<button class="cta ghost" data-act="restart">Back to overview</button>`
+      : `<button class="cta pulse" data-act="send" ${f.sending ? 'disabled' : ''}><i class="ph ph-paper-plane-tilt"></i>${f.sending ? 'Sending' : 'Send report'}</button>`}</div>`);
+}
+
+/* ---------- Shell ---------- */
+function renderTabs() {
+  $('#tabs').innerHTML = Object.entries(SCN).map(([k, c]) => `<button class="tab" role="tab" aria-selected="${S.scn === k}" data-scn="${k}"><span class="av ${S.scn === k ? 'lime' : ''}">${c.initials}</span><span class="nm">${c.tab}, ${c.role.split(',')[0].toLowerCase()}</span></button>`).join('');
+}
+function renderRail() {
+  const c = SCN[S.scn], last = S.step === c.steps.length - 1;
+  const reached = (S.scn === 'driver' && last && S.d.emailed) || (S.scn === 'technician' && last) || (S.scn === 'fleet' && S.f.sent);
+  $('#rail').innerHTML = `<div class="who"><span class="av lime">${c.initials}</span><div><h1>${c.name}</h1><p>${c.role}</p></div></div>
+    <p class="goal">${c.goal}</p>
+    <ol class="steps">${c.steps.map((st, i) => `<li><button class="step-btn ${i < S.step ? 'done' : ''}" ${i === S.step ? 'aria-current="step"' : ''} data-go="${i}">
+      <span class="n mono">${i < S.step ? '<i class="ph-bold ph-check"></i>' : i + 1}</span><span class="h">${st.h}</span><span class="s">${st.s}</span></button></li>`).join('')}</ol>
+    <div class="outcome ${reached ? 'reached' : ''}"><b>${reached ? 'Outcome reached.' : 'Outcome:'}</b> ${c.outcome}</div>
+    <p class="hint"><i class="ph ph-hand-pointing"></i>Tap the highlighted button on the screen to move on.</p>`;
+}
+function render(animate = true) {
+  clearTimers();
+  const c = SCN[S.scn];
+  const dev = $('#device');
+  dev.className = 'device ' + c.device;
+  $('#screen').innerHTML = `<div class="view ${animate ? 'in-' + S.dir : ''}">${c.steps[S.step].r()}</div>${S.toast ? `<div class="toast"><i class="ph-fill ph-info"></i>${S.toast}</div>` : ''}`;
+  renderRail(); renderTabs(); fit();
+  if (S.scn === 'driver' && S.step === 2) driverTimers();
+  history.replaceState(null, '', '#' + S.scn + (S.step ? '/' + (S.step + 1) : ''));
+}
+function driverTimers() {
+  const d = S.d;
+  if (!d.charging) {
+    timers.push(setInterval(() => { d.held = Math.max(0, d.held - 1); const el = $('#held'); if (el) el.textContent = `${String(Math.floor(d.held / 60)).padStart(2, '0')}:${String(d.held % 60).padStart(2, '0')}`; }, 1000));
+    return;
+  }
+  paintCharge();
+  if (d.done) return;
+  timers.push(setInterval(() => {
+    d.pct = Math.min(80, d.pct + (reduce ? 62 : 0.62));
+    paintCharge();
+    if (d.pct >= 80) { d.done = true; render(false); }
+  }, 100));
+}
+function toast(msg) { S.toast = msg; render(false); setTimeout(() => { if (S.toast === msg) { S.toast = null; const t = $('.toast'); if (t) t.remove(); } }, 2200); }
+function go(step, dir) { S.step = step; S.dir = dir; S.toast = null; render(); }
+
+document.addEventListener('click', e => {
+  const tab = e.target.closest('[data-scn]');
+  if (tab) { S = fresh(tab.dataset.scn); render(); return; }
+  const stepBtn = e.target.closest('[data-go]');
+  if (stepBtn) { const n = +stepBtn.dataset.go; if (n !== S.step) go(n, n > S.step ? 'next' : 'prev'); return; }
+  const a = e.target.closest('[data-act]');
+  if (!a) return;
+  const v = a.dataset.v, d = S.d, t = S.t, f = S.f;
+  switch (a.dataset.act) {
+    case 'next': go(S.step + 1, 'next'); break;
+    case 'prev': go(S.step - 1, 'prev'); break;
+    case 'restart': S = fresh(S.scn); S.dir = 'prev'; render(); break;
+    case 'nope': toast('Not part of this scenario'); break;
+    case 'nope-stop': toast('Daniel lets it run to 80%'); break;
+    case 'port': d.port = v; render(false); break;
+    case 'target': d.target = v === 'amt' ? 'amt' : +v; render(false); break;
+    case 'reserve': S.step = 2; S.dir = 'next'; S.toast = `${d.port} is held for 15 minutes`; render(); setTimeout(() => { S.toast = null; $('.toast')?.remove(); }, 2200); break;
+    case 'start': d.charging = true; render(false); break;
+    case 'email': d.emailed = true; render(false); break;
+    case 'sheet': t.sheet = true; render(false); break;
+    case 'sheet-close': t.sheet = false; render(false); break;
+    case 'oos': t.sheet = false; t.oos = true; S.toast = 'B2 hidden from drivers'; render(false); setTimeout(() => { S.toast = null; $('.toast')?.remove(); }, 2200); break;
+    case 'check': t.checks[+v] = !t.checks[+v]; render(false); break;
+    case 'photo': t.photo = true; render(false); break;
+    case 'tog': f[v] = !f[v]; render(false); break;
+    case 'save': f.saved = true; render(false); break;
+    case 'fmt': f.format = v; render(false); break;
+    case 'send': f.email = $('#email')?.value || f.email; f.sending = true; render(false);
+      setTimeout(() => { f.sending = false; f.sent = true; render(false); }, reduce ? 50 : 1400); break;
+  }
+});
+document.addEventListener('input', e => {
+  if (e.target.id === 'limit') { S.f.limit = +e.target.value; S.f.saved = false; $('#limit-out').firstChild.textContent = S.f.limit.toLocaleString('en-US') + ' '; }
+});
+
+// Scale the device to fit the space it has.
+function fit() {
+  const dev = $('#device'), box = $('#box'), wrap = $('#wrap');
+  const w = dev.offsetWidth, h = dev.offsetHeight;
+  const availW = wrap.clientWidth, availH = innerWidth > 960 ? innerHeight - 64 - 56 : Infinity;
+  const k = Math.min(1, availW / w, availH / h);
+  dev.style.transform = `scale(${k})`;
+  box.style.width = w * k + 'px'; box.style.height = h * k + 'px';
+}
+addEventListener('resize', fit);
+
+// Theme toggle: system by default, remembered per viewer.
+const root = document.documentElement;
+try { const th = localStorage.getItem('vl-theme'); if (th) root.dataset.theme = th; } catch (e) {}
+$('#theme').addEventListener('click', () => {
+  const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  root.dataset.theme = dark ? 'light' : 'dark';
+  try { localStorage.setItem('vl-theme', root.dataset.theme); } catch (e) {}
+});
+
+// Print sheets: every screen of one scenario on one page, for the PDF copies.
+function printSheet(scn) {
+  document.body.classList.add('print');
+  root.dataset.theme = 'light';
+  const c = SCN[scn];
+  S = fresh(scn);
+  Object.assign(S.d, { port: 'B4', charging: true, pct: 57 });
+  Object.assign(S.t, { oos: true, checks: [true, true, true, true], photo: true });
+  Object.assign(S.f, { saved: true });
+  const W = c.device === 'phone' ? 390 : 1060, H = c.device === 'phone' ? 800 : 700, fw = c.device === 'phone' ? 250 : 520;
+  const k = (fw - 16) / (W - 24);
+  const frames = c.steps.map((st, i) => {
+    S.step = i;
+    if (scn === 'driver' && i === 1) { /* station screen shows B4 picked */ }
+    if (scn === 'fleet' && i === 3) S.f.sent = true;
+    return `<div class="frame ${c.device === 'tablet' ? 'wide' : ''}"><div class="mini" style="height:${(H - 24) * k + 16}px">
+      <div class="scaled" style="width:${W - 24}px;height:${H - 24}px;transform:scale(${k})"><div class="screen" style="border-radius:${c.device === 'phone' ? 30 : 12}px"><div class="view">${st.r()}</div></div></div></div>
+      <p class="frame-cap"><b>${i + 1}. ${st.h}</b>${st.s}</p></div>`;
+  }).join('');
+  $('#sheetpage').innerHTML = `<h1>${c.name}, ${c.role.toLowerCase()}</h1><p class="meta">EV Charger System prototype. Live version: ryandev1st.github.io/ev-charger-prototype/#${scn}. Outcome: ${c.outcome}</p><div class="frames">${frames}</div>`;
+  if (scn === 'driver') paintChargeStatic();
+}
+function paintChargeStatic() { const g = chargeFigures(57); const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('left', g.left + ' min'); set('kwh', g.kwh + ' kWh'); set('cost', Math.round(g.cost / 1000).toLocaleString('en-US') + 'k'); }
+
+const params = new URLSearchParams(location.search);
+if (params.get('print') && SCN[params.get('print')]) printSheet(params.get('print'));
+else {
+  const [h, n] = location.hash.slice(1).split('/');
+  S = fresh(SCN[h] ? h : 'driver');
+  if (SCN[h] && n) S.step = Math.min(Math.max(0, +n - 1), SCN[h].steps.length - 1);
+  if (S.scn === 'driver' && S.step >= 2) Object.assign(S.d, { port: 'B4' });
+  if (S.scn === 'technician' && S.step >= 2) S.t.oos = true;
+  render(false);
+}
+addEventListener('hashchange', () => { const [h] = location.hash.slice(1).split('/'); if (SCN[h] && h !== S.scn) { S = fresh(h); render(); } });
+</script>
+</body>
+</html>
