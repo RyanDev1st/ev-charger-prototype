@@ -321,7 +321,7 @@ footer a { color: inherit; }
 }
 
 /* Print sheets, used to make the PDF copies (?print=driver etc.) */
-body.print { background: var(--bg); }
+body.print { background: var(--bg); min-height: 0; display: block; }
 body.print .top, body.print .stage, body.print footer { display: none; }
 .sheetpage { display: none; padding: 18px 22px; }
 body.print .sheetpage { display: block; }
@@ -329,7 +329,7 @@ body.print .sheetpage { display: block; }
 .sheetpage .meta { font-size: 13px; color: var(--muted); margin: 4px 0 16px; }
 .frames { display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; }
 .frame { width: 250px; }
-.frame.wide { width: 520px; }
+.frame.wide { width: 400px; }
 .frame-cap { font-size: 12px; margin-top: 8px; color: var(--muted); line-height: 1.4; }
 .frame-cap b { color: var(--ink); display: block; font-size: 12.5px; }
 .mini { position: relative; overflow: hidden; border-radius: 30px; background: var(--frame); padding: 8px; }
@@ -746,7 +746,7 @@ function printSheet(scn) {
   Object.assign(S.d, { port: 'B4', charging: true, pct: 57 });
   Object.assign(S.t, { oos: true, checks: [true, true, true, true], photo: true });
   Object.assign(S.f, { saved: true });
-  const W = c.device === 'phone' ? 390 : 1060, H = c.device === 'phone' ? 800 : 700, fw = c.device === 'phone' ? 250 : 520;
+  const W = c.device === 'phone' ? 390 : 1060, H = c.device === 'phone' ? 800 : 700, fw = c.device === 'phone' ? 250 : 400;
   const k = (fw - 16) / (W - 24);
   const frames = c.steps.map((st, i) => {
     S.step = i;
@@ -756,7 +756,7 @@ function printSheet(scn) {
       <div class="scaled" style="width:${W - 24}px;height:${H - 24}px;transform:scale(${k})"><div class="screen" style="border-radius:${c.device === 'phone' ? 30 : 12}px"><div class="view">${st.r()}</div></div></div></div>
       <p class="frame-cap"><b>${i + 1}. ${st.h}</b>${st.s}</p></div>`;
   }).join('');
-  $('#sheetpage').innerHTML = `<h1>${c.name}, ${c.role.toLowerCase()}</h1><p class="meta">EV Charger System prototype. Live version: ryandev1st.github.io/ev-charger-prototype/#${scn}. Outcome: ${c.outcome}</p><div class="frames">${frames}</div>`;
+  $('#sheetpage').innerHTML = `<h1>${c.name}, ${c.role.charAt(0).toLowerCase() + c.role.slice(1)}</h1><p class="meta">EV Charger System prototype. Live version: ryandev1st.github.io/ev-charger-prototype/#${scn}. Outcome: ${c.outcome}</p><div class="frames">${frames}</div>`;
   if (scn === 'driver') paintChargeStatic();
 }
 function paintChargeStatic() { const g = chargeFigures(57); const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
