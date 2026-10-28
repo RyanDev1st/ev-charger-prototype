@@ -250,7 +250,8 @@ textarea:focus, input:focus { outline: none; border-color: var(--accent-text); }
 .side { border-right: 1px solid var(--line); padding: 20px 14px; display: flex; flex-direction: column; gap: 4px; background: var(--surface); }
 .side .brand { font-size: 16px; margin: 0 6px 18px; }
 .side .brand-mark { width: 26px; height: 26px; font-size: 14px; }
-.nav-i { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 999px; font-size: 14.5px; color: var(--muted); }
+.nav-i { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 999px; font-size: 14.5px; color: var(--muted); border: 0; background: none; font-family: inherit; text-align: left; width: 100%; cursor: pointer; }
+.nav-i:not(.on):hover { color: var(--ink); }
 .nav-i i { font-size: 18px; }
 .nav-i.on { background: var(--ink); color: var(--bg); }
 .side .me-card { margin-top: auto; display: flex; gap: 10px; align-items: center; font-size: 13px; padding: 6px; }
@@ -573,7 +574,7 @@ function tDone() {
 function fShell(active, body) {
   const items = [['ph-squares-four','Overview'],['ph-van','Vans'],['ph-wallet','Budgets'],['ph-file-text','Reports']];
   return `<div class="fleet"><nav class="side"><div class="brand"><span class="brand-mark"><i class="ph-fill ph-lightning"></i></span>VoltLane Fleet</div>
-    ${items.map(([ic, l], i) => `<span class="nav-i ${i === active ? 'on' : ''}"><i class="ph ${ic}"></i>${l}</span>`).join('')}
+    ${items.map(([ic, l], i) => `<button class="nav-i ${i === active ? 'on' : ''}" data-go="${i}" ${i === active ? 'aria-current="page"' : ''}><i class="ph ${ic}"></i>${l}</button>`).join('')}
     <div class="me-card"><span class="av lime">VH</span><div><b>Võ Thị Thu Hà</b><p class="sub">GreenLeaf Deliveries</p></div></div></nav>
     <section class="main">${body}</section></div>`;
 }
@@ -692,8 +693,7 @@ document.addEventListener('click', e => {
   const v = a.dataset.v, d = S.d, t = S.t, f = S.f;
   switch (a.dataset.act) {
     case 'next': go(S.step + 1, 'next'); break;
-    case 'prev': go(S.step - 1, 'prev'); break;
-    case 'restart': S = fresh(S.scn); S.dir = 'prev'; render(); break;
+    case 'prev': go(S.step - 1, 'prev'); break;    case 'restart': S = fresh(S.scn); S.dir = 'prev'; render(); break;
     case 'nope': toast('Not part of this scenario'); break;
     case 'nope-stop': toast('Phúc lets it run to 80%'); break;
     case 'port': d.port = v; render(false); break;
