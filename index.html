@@ -309,27 +309,33 @@ textarea:focus, input:focus { outline: none; border-color: var(--accent-text); }
 @keyframes growx { from { transform: scaleX(0); } }
 .tip { display: flex; gap: 12px; align-items: flex-start; background: var(--warn-soft); color: var(--warn-text); border: 0; }
 .tip i { font-size: 20px; }
-/* Fleet: van list, budget table, report preview */
-.vans { display: grid; grid-template-columns: 1fr 1.05fr; gap: 14px; align-items: start; }
-.vlist { padding: 6px; max-height: 340px; overflow-y: auto; }
-.vrow { width: 100%; display: grid; grid-template-columns: 58px 1fr auto 46px; gap: 8px; align-items: center; padding: 8px 10px; border-radius: 10px; font-size: 13px; text-align: left; cursor: pointer; }
+/* Fleet: van peek, tick list, budget chart */
+.b.sel { outline: 2px solid var(--ink); outline-offset: 2px; }
+.peek { display: grid; grid-template-columns: auto auto auto 1fr; gap: 26px; align-items: center; }
+.peek > div > b { display: block; font-size: 19px; letter-spacing: -.02em; }
+.peek .tip-line { grid-column: 1 / -1; }
+.peek.empty { display: flex; gap: 10px; color: var(--muted); }
+.peek.empty i { font-size: 20px; }
+.split-bar { display: block; height: 8px; border-radius: 999px; background: var(--line); overflow: hidden; margin-top: 6px; }
+.split-bar i { display: block; height: 100%; background: color-mix(in srgb, var(--ink) 55%, var(--line)); }
+.presets { width: auto; min-width: 340px; }
+.vlist { padding: 4px 8px; max-height: 360px; overflow-y: auto; }
+.vrow { width: 100%; display: grid; grid-template-columns: 22px 58px 1fr 90px 52px 44px; gap: 12px; align-items: center; padding: 8px 4px; border-bottom: 1px solid var(--line); font-size: 13px; text-align: left; cursor: pointer; }
+.vrow.head { position: sticky; top: 0; z-index: 1; background: var(--surface); font-size: 11.5px; font-weight: 600; color: var(--muted); cursor: default; }
+.vrow .split-bar { margin-top: 0; }
 .vrow .chip { font-size: 11px; padding: 2px 6px; justify-content: center; }
-.vrow:hover:not(.on) { background: var(--sunken); }
-.vrow.on { background: var(--ink); color: var(--bg); }
-.vrow.on .drv { color: inherit; opacity: .75; }
+.vrow .box { width: 20px; height: 20px; border-radius: 6px; font-size: 12px; }
+.vrow[aria-checked="true"] .box { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.vrow[aria-checked="false"] { color: var(--muted); }
+.vrow:not(.head):hover { background: var(--sunken); }
 .drv { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.vdetail { display: grid; gap: 8px; }
-.vdetail .vs { margin-top: 2px; }
-.vdetail .hbar { grid-template-columns: 170px 1fr 40px; padding: 4px 0; }
 .tip-line { display: flex; gap: 8px; font-size: 13px; line-height: 1.45; color: var(--warn-text); background: var(--warn-soft); padding: 10px 12px; border-radius: 12px; }
 .lchart { position: relative; display: flex; align-items: flex-end; gap: 5px; height: 130px; margin-top: 22px; border-bottom: 1px solid var(--muted); }
 .lb { flex: 1; border-radius: 4px 4px 0 0; background: color-mix(in srgb, var(--ink) 32%, var(--line)); transition: background .2s; }
 .lb:hover { filter: brightness(.88); }
 .lb.over { background: var(--danger); }
-.lb.ex, .hatch { background: repeating-linear-gradient(135deg, var(--line) 0 3px, transparent 3px 6px); outline: 1px dashed var(--line); outline-offset: -1px; }
 .lim { position: absolute; left: 0; right: 0; border-top: 2px solid var(--ink); z-index: 1; pointer-events: none; transition: bottom .12s; }
 .lim span { position: absolute; right: 0; bottom: 3px; font-size: 11px; font-weight: 700; background: var(--surface); padding: 0 4px; }
-.lx span.ex { opacity: .4; text-decoration: line-through; }
 .form-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; align-items: start; }
 .limit { font-size: 40px; letter-spacing: -.04em; font-weight: 600; margin: 4px 0 10px; }
 input[type="range"] { width: 100%; accent-color: var(--ink); height: 28px; }
@@ -445,11 +451,11 @@ const SCN = {
   fleet: {
     tab: 'Hà', initials: 'VH', name: 'Võ Thị Thu Hà', role: 'Fleet manager, GreenLeaf Deliveries', device: 'tablet',
     goal: 'Finance wants October\'s charging costs for all <b>25 vans</b> by the end of the day.',
-    outcome: 'Finance has the October report, and every driver starts November with a spending limit.',
+    outcome: 'Finance has the October report, and the 11 costliest vans start November with a spending limit.',
     steps: [
-      { h: 'Check the month', s: 'The fleet dashboard shows the total spend, energy used and a bar for each van. One bar sticks out.', r: fOverview },
-      { h: 'Look into VAN-07', s: 'The list of vans puts VAN-07 on top, at almost twice the average. Its driver, Tuấn, mostly used expensive fast chargers in the city centre.', r: fVan },
-      { h: 'Set budgets', s: 'She sets a 3,000,000 VND monthly limit for all 25 drivers, with a warning at 80%, and sees who would have gone over in October.', r: fBudget },
+      { h: 'Check the month', s: 'The dashboard shows the total spend and a bar for each van. VAN-07 sticks out. Tapping it shows its driver, Tuấn, mostly used expensive city-centre fast chargers.', r: fOverview },
+      { h: 'Pick the vans', s: 'She ticks the 11 vans that spent more than average, VAN-07 included.', r: fVan },
+      { h: 'Set their budget', s: 'For those 11 vans she sets a 3,000,000 VND monthly limit with a warning at 80%, and sees which ones would have gone over in October.', r: fBudget },
       { h: 'Send the report', s: 'She exports the October report for the whole fleet as a PDF and sends it to the finance team.', r: fExport },
     ],
   },
@@ -460,7 +466,7 @@ function fresh(scn) {
   return { scn, step: 0, dir: 'next', toast: null,
     d: { port: null, target: 80, charging: false, pct: 18, held: 900, done: false, emailed: false },
     t: { oos: false, checks: [false, false, false, false], photo: false },
-    f: { sel: 6, on: Array(25).fill(true), scope: 'all', block: false, limit: 3000000, warn: true, tell: true, saved: false, format: 'pdf', email: 'finance@greenleaf.vn', sending: false, sent: false } };
+    f: { peek: null, on: VANS.map(v => v > AVG), scope: 'all', block: false, limit: 3000000, warn: true, tell: true, saved: false, format: 'pdf', email: 'finance@greenleaf.vn', sending: false, sent: false } };
 }
 function clearTimers() { timers.forEach(clearInterval); timers = []; }
 
@@ -631,43 +637,53 @@ function fShell(active, body) {
     <section class="main">${body}</section></div>`;
 }
 
+function vanPeek(i) {
+  if (i == null) return `<div class="card peek empty"><i class="ph ph-hand-tap"></i><p class="sub">Tap a bar to see who drives that van and where its money went.</p></div>`;
+  const v = VANS[i], x = v / AVG;
+  return `<div class="card peek"><div><b class="mono">${vid(i)}</b><span class="sub">${DRIVERS[i]}</span></div>
+      <div><b class="mono">${vnd1(v)}</b><span class="sub">VND in October</span></div>
+      <div><b class="mono" style="${x > 1.15 ? 'color:var(--warn-text)' : ''}">${x.toFixed(1)}x</b><span class="sub">fleet average</span></div>
+      <div><span class="sub">Fast chargers ${FAST[i]}%, depot ${100 - FAST[i]}%</span><span class="split-bar"><i style="width:${FAST[i]}%"></i></span></div>
+      ${FAST[i] > 50 ? `<p class="tip-line"><i class="ph-fill ph-lightbulb"></i>${DRIVERS[i].split(' ').pop()} mostly used city-centre fast chargers. Charging overnight at the depot costs about 40% less per kWh.</p>` : ''}</div>`;
+}
+
 function fOverview() {
-  const max = 5000, avg = 2450;
+  const f = S.f, max = 5000;
   return fShell(0, `<div class="main-head"><div><p class="sub">25 vans, 1 to 31 October</p><h2>October charging</h2></div>
       <span class="chip dim" style="font-size:13.5px;padding:8px 14px"><i class="ph ph-calendar-blank"></i>October 2026</span></div>
     <div class="kpis"><div class="kpi lead"><span>Total spend</span><b class="mono">61,250,000 <small>VND</small></b></div>
       <div class="kpi"><span>Energy used</span><b class="mono">6,805 <small>kWh</small></b></div>
       <div class="kpi"><span>Charging sessions</span><b class="mono">742</b></div>
       <div class="kpi"><span>Average per van</span><b class="mono">2.45M <small>VND</small></b></div></div>
-    <div class="card chart-card"><div class="bar-row" style="justify-content:space-between"><div><h3>Spend per van</h3><span class="sub">Million VND, October. Tap a bar to open the van.</span></div>
+    <div class="card chart-card"><div class="bar-row" style="justify-content:space-between"><div><h3>Spend per van</h3><span class="sub">Million VND, October. Tap a bar to see the van.</span></div>
         <div class="legend"><span><i style="background:color-mix(in srgb, var(--ink) 38%, var(--line))"></i>Fast chargers</span><span><i style="background:var(--line)"></i>Depot, overnight</span></div></div>
       <div class="chart-wrap"><div class="yaxis">${[0, 1, 2, 3, 4, 5].map(m => `<span style="bottom:${m / 5 * 100}%">${m ? m + 'M' : '0'}</span>`).join('')}</div>
         <div class="chart">${[1, 2, 3, 4, 5].map(m => `<div class="grid" style="bottom:${m / 5 * 100}%"></div>`).join('')}
-          <div class="avg" style="bottom:${avg / max * 100}%"><span>Average 2.45M</span></div>
-          ${VANS.map((v, i) => { const id = String(i + 1).padStart(2, '0');
-            return `<div class="b ${i === 6 ? 'hi' : ''} ${i < 3 ? 'tl' : i > 21 ? 'tr' : ''}" style="--i:${i};height:${v / max * 100}%" data-tip="VAN-${id}&#10;${(v * 1000).toLocaleString('en-US')} VND&#10;${FAST[i]}% at fast chargers" role="button" aria-label="VAN-${id}, ${(v * 1000).toLocaleString('en-US')} VND" data-act="openvan" data-v="${i}"><i class="fast" style="height:${FAST[i]}%"></i></div>`; }).join('')}</div>
-        <div class="xaxis">${VANS.map((_, i) => `<span class="${i === 6 ? 'hi' : ''}">${String(i + 1).padStart(2, '0')}</span>`).join('')}</div></div></div>`);
+          <div class="avg" style="bottom:${AVG / max * 100}%"><span>Average 2.45M</span></div>
+          ${VANS.map((v, i) => `<div class="b ${i === 6 ? 'hi' : ''} ${i === f.peek ? 'sel' : ''} ${i < 3 ? 'tl' : i > 21 ? 'tr' : ''}" style="--i:${i};height:${v / max * 100}%"
+            data-tip="${vid(i)}&#10;${vnd1(v)} VND&#10;${FAST[i]}% at fast chargers" role="button" aria-pressed="${i === f.peek}" aria-label="${vid(i)}, ${vnd1(v)} VND" data-act="peek" data-v="${i}"><i class="fast" style="height:${FAST[i]}%"></i></div>`).join('')}</div>
+        <div class="xaxis">${VANS.map((_, i) => `<span class="${i === 6 ? 'hi' : ''}">${String(i + 1).padStart(2, '0')}</span>`).join('')}</div></div></div>
+    ${vanPeek(f.peek)}
+    <div class="row-btns"><button class="cta pulse" data-act="next"><i class="ph ph-check-square"></i>Choose vans for a budget</button></div>`);
 }
+
+const ABOVE = VANS.filter(v => v > AVG).length;
+const picked = () => ORDER.filter(k => S.f.on[k]);
 
 function fVan() {
-  const f = S.f, i = f.sel, v = VANS[i], x = v / AVG;
-  const st = [['City-centre fast chargers', FAST[i] * .6], ['Other fast chargers', FAST[i] * .4], ['GreenLeaf depot, overnight', 100 - FAST[i]]];
-  const top = Math.max(...st.map(s => s[1]));
-  return fShell(1, `<div class="main-head"><div><p class="sub">25 vans, October. Highest spend first.</p><h2>Vans</h2></div>
-      <span class="chip warn">${VANS.filter(k => k > AVG * 1.15).length} vans more than 15% over average</span></div>
-    <div class="vans"><div class="card vlist" role="listbox" aria-label="Vans">${ORDER.map(k => `<button class="vrow ${k === i ? 'on' : ''}" role="option" aria-selected="${k === i}" data-act="pick" data-v="${k}">
-        <b class="mono">${vid(k)}</b><span class="drv">${DRIVERS[k]}</span><span class="mono">${(VANS[k] / 1000).toFixed(2)}M</span>
-        <span class="chip ${VANS[k] > AVG * 1.15 ? 'warn' : 'dim'} mono">${(VANS[k] / AVG).toFixed(1)}x</span></button>`).join('')}</div>
-      <div class="card vdetail"><div class="bar-row" style="justify-content:space-between"><div><h3 style="font-size:20px">${vid(i)}</h3><p class="sub">Driver: ${DRIVERS[i]}</p></div>
-          <span class="chip ${x > 1.15 ? 'warn' : 'dim'}">${x.toFixed(1)}x fleet average</span></div>
-        <div class="vs"><div><b class="mono">${vnd1(v)}</b><span class="sub">October, VND</span></div><div class="muted"><b class="mono">${Math.round(v / 82.5)}</b><span class="sub">sessions</span></div></div>
-        <h3 style="margin-top:6px">Where the money went</h3>
-        ${st.map(([n, p], k) => `<div class="hbar"><span>${n}</span><i class="${k === 2 ? 'lo' : ''}" style="width:${p / top * 100}%;animation-delay:${k * 90}ms"></i><b class="mono">${Math.round(p)}%</b></div>`).join('')}
-        ${FAST[i] > 50 ? `<p class="tip-line"><i class="ph-fill ph-lightbulb"></i>Depot charging overnight costs about 40% less per kWh than city-centre fast chargers.</p>` : ''}</div></div>
-    <div class="row-btns"><button class="cta pulse" data-act="next"><i class="ph ph-wallet"></i>Set budgets for all drivers</button></div>`);
+  const f = S.f, sel = picked(), n = sel.length, tot = sel.reduce((s, k) => s + VANS[k], 0);
+  const preset = n === 25 ? 'all' : !n ? 'none' : VANS.every((v, k) => f.on[k] === v > AVG) ? 'above' : '';
+  return fShell(1, `<div class="main-head"><div><p class="sub">Tick the vans that get a November budget</p><h2>Pick the vans</h2></div>
+      <div class="seg presets">${[['above', `Above average (${ABOVE})`], ['all', 'All 25'], ['none', 'Clear']].map(([k, l]) => `<button data-act="preset" data-v="${k}" aria-pressed="${preset === k}">${l}</button>`).join('')}</div></div>
+    <div class="card vlist"><div class="vrow head"><span></span><span>Van</span><span>Driver</span><span>Fast chargers</span><span>October</span><span>vs avg</span></div>
+      ${ORDER.map(k => `<button class="vrow" role="checkbox" aria-checked="${f.on[k]}" data-act="van-on" data-v="${k}"><span class="box"><i class="ph-bold ph-check"></i></span>
+        <b class="mono">${vid(k)}</b><span class="drv">${DRIVERS[k]}</span><span class="split-bar" title="${FAST[k]}% at fast chargers"><i style="width:${FAST[k]}%"></i></span>
+        <span class="mono">${(VANS[k] / 1000).toFixed(2)}M</span><span class="chip ${VANS[k] > AVG * 1.15 ? 'warn' : 'dim'} mono">${(VANS[k] / AVG).toFixed(1)}x</span></button>`).join('')}</div>
+    <div class="row-btns" style="justify-content:space-between;align-items:center"><p class="sub"><b style="color:var(--ink)">${n} vans</b> ticked, ${vnd1(tot)} VND in October</p>
+      <button class="cta pulse" data-act="next" ${n ? '' : 'disabled'}><i class="ph ph-wallet"></i>Set a budget for ${n} vans</button></div>`);
 }
 
-const overText = (o, n) => o ? `<b style="color:var(--danger)">${o}</b> of ${n} would have gone over in October` : 'Nobody would have gone over in October';
+const overText = (o, n) => o ? `<b style="color:var(--danger)">${o}</b> of ${n} would have gone over in October` : 'None of them would have gone over in October';
 // Move the limit line and recolour bars while the slider is dragged, without a re-render.
 function paintLimit() {
   const f = S.f, lim = $('#lim');
@@ -675,32 +691,29 @@ function paintLimit() {
   lim.style.bottom = Math.min(100, f.limit / 5e6 * 100) + '%';
   lim.firstChild.textContent = `Limit ${(f.limit / 1e6).toFixed(2)}M`;
   let o = 0;
-  document.querySelectorAll('.lb').forEach((b, k) => { const bad = f.on[k] && +b.dataset.k * 1000 > f.limit; b.classList.toggle('over', bad); o += bad; });
-  $('#over-out').innerHTML = overText(o, f.on.filter(Boolean).length);
+  document.querySelectorAll('.lb').forEach(b => { const bad = +b.dataset.k * 1000 > f.limit; b.classList.toggle('over', bad); o += bad; });
+  $('#over-out').innerHTML = overText(o, picked().length);
 }
 
 function fBudget() {
-  const f = S.f;
-  const n = f.on.filter(Boolean).length, over = ORDER.filter(k => f.on[k] && VANS[k] * 1000 > f.limit);
-  return fShell(2, `<div class="main-head"><div><p class="sub">From 1 November, ${n} of 25 drivers</p><h2>Charging budgets</h2></div></div>
-    <div class="form-grid"><div class="card"><label class="lbl-top" for="limit">Monthly limit per driver</label>
+  const f = S.f, sel = picked(), n = sel.length, over = sel.filter(k => VANS[k] * 1000 > f.limit).length;
+  return fShell(2, `<div class="main-head"><div><p class="sub">${n} vans, from 1 November</p><h2>Set their budget</h2></div>
+      <button class="cta ghost" style="width:auto;padding:0 18px;height:42px" data-go="1"><i class="ph ph-pencil-simple"></i>Change vans</button></div>
+    <div class="form-grid"><div class="card"><label class="lbl-top" for="limit">Monthly limit per van</label>
         <p class="limit mono" id="limit-out">${f.limit.toLocaleString('en-US')} <small style="font-size:18px;color:var(--muted)">VND</small></p>
         <input type="range" id="limit" min="1500000" max="6000000" step="250000" value="${f.limit}" data-act="limit">
         <p class="help">October average was 2,450,000 VND per van.</p></div>
       <div class="card">
-        <button class="toggle" role="switch" aria-checked="${f.warn}" data-act="tog" data-v="warn"><span>Warn me when a driver reaches 80%</span><span class="sw"></span></button>
+        <button class="toggle" role="switch" aria-checked="${f.warn}" data-act="tog" data-v="warn"><span>Warn me when a van reaches 80%</span><span class="sw"></span></button>
         <button class="toggle" role="switch" aria-checked="${f.tell}" data-act="tog" data-v="tell"><span>Send the driver the same warning</span><span class="sw"></span></button>
         <button class="toggle" role="switch" aria-checked="${f.block}" data-act="tog" data-v="block"><span>Block charging at 100%</span><span class="sw"></span></button></div></div>
-    <div class="card"><div class="bar-row" style="justify-content:space-between"><div><h3>October spend against the limit</h3><span class="sub">Tap a bar to exempt that van</span></div>
-        <span class="sub" id="over-out">${overText(over.length, n)}</span></div>
+    <div class="card"><div class="bar-row" style="justify-content:space-between"><h3>These ${n} vans in October</h3><span class="sub" id="over-out">${overText(over, n)}</span></div>
       <div class="lchart"><div class="lim" id="lim" style="bottom:${Math.min(100, f.limit / 5e6 * 100)}%"><span class="mono">Limit ${(f.limit / 1e6).toFixed(2)}M</span></div>
-        ${VANS.map((v, k) => `<button class="lb ${!f.on[k] ? 'ex' : v * 1000 > f.limit ? 'over' : ''}" style="height:${v / 5000 * 100}%" data-act="van-on" data-v="${k}" data-k="${v}"
-          aria-label="${vid(k)}, ${vnd1(v)} VND, ${f.on[k] ? 'limit applies' : 'exempt'}" title="${vid(k)} · ${DRIVERS[k]} · ${vnd1(v)} VND${f.on[k] ? '' : ' · exempt'}"></button>`).join('')}</div>
-      <div class="xaxis lx">${VANS.map((_, k) => `<span class="${f.on[k] ? '' : 'ex'}">${String(k + 1).padStart(2, '0')}</span>`).join('')}</div>
-      <div class="legend" style="margin-top:10px"><span><i style="background:var(--danger)"></i>Would have gone over</span><span><i style="background:color-mix(in srgb, var(--ink) 32%, var(--line))"></i>Within the limit</span><span><i class="hatch"></i>Exempt</span></div></div>
-    ${f.saved ? `<div class="card" style="display:flex;gap:12px;align-items:center;border-color:var(--accent-text)"><i class="ph-fill ph-check-circle" style="font-size:22px;color:var(--accent-text)"></i><p style="font-size:14.5px">Saved. ${n} drivers get a ${f.limit.toLocaleString('en-US')} VND limit from 1 November.</p></div>` : ''}
+        ${sel.map(k => `<div class="lb ${VANS[k] * 1000 > f.limit ? 'over' : ''}" style="height:${VANS[k] / 5000 * 100}%" data-k="${VANS[k]}" title="${vid(k)} · ${DRIVERS[k]} · ${vnd1(VANS[k])} VND"></div>`).join('')}</div>
+      <div class="xaxis lx">${sel.map(k => `<span>${String(k + 1).padStart(2, '0')}</span>`).join('')}</div></div>
+    ${f.saved ? `<div class="card" style="display:flex;gap:12px;align-items:center;border-color:var(--accent-text)"><i class="ph-fill ph-check-circle" style="font-size:22px;color:var(--accent-text)"></i><p style="font-size:14.5px">Saved. ${n} vans get a ${f.limit.toLocaleString('en-US')} VND limit from 1 November.</p></div>` : ''}
     <div class="row-btns">${f.saved ? `<button class="cta pulse" data-act="next"><i class="ph ph-export"></i>Export October report</button>`
-      : `<button class="cta dark" data-act="ask" data-v="save" ${n ? '' : 'disabled'}>Save budgets for ${n} drivers</button>`}</div>`);
+      : `<button class="cta dark" data-act="ask" data-v="save" ${n ? '' : 'disabled'}>Save budget for ${n} vans</button>`}</div>`);
 }
 
 function fExport() {
@@ -712,11 +725,11 @@ function fExport() {
   else { const vs = reportVans(), tot = vs.reduce((s, k) => s + VANS[k], 0);
     preview = `<div class="card"><h3>In the report</h3><dl class="kv" style="margin-top:8px"><dt>Covers</dt><dd>${vs.length} vans, 1 to 31 October</dd>
       <dt>Total spend</dt><dd class="mono">${vnd1(tot)} VND</dd><dt>Flagged</dt><dd>${vs.filter(k => VANS[k] > AVG * 1.15).length} vans more than 15% over average</dd>
-      <dt>November limits</dt><dd>${f.saved ? `${f.limit.toLocaleString('en-US')} VND for ${f.on.filter(Boolean).length} drivers` : 'Not set yet'}</dd></dl></div>`; }
+      <dt>November limits</dt><dd>${f.saved ? `${f.limit.toLocaleString('en-US')} VND for ${picked().length} vans` : 'Not set yet'}</dd></dl></div>`; }
   return fShell(3, `<div class="main-head"><div><p class="sub">October 2026</p><h2>Fleet report</h2></div></div>
     <div class="form-grid"><div class="card"><label class="lbl-top">Vans</label><div class="radio-row">
         <button class="radio" role="radio" aria-checked="${f.scope === 'all'}" data-act="scope" data-v="all" ${f.sent ? 'disabled' : ''}><i class="ph ph-van"></i><span><b>All 25 vans</b><span>Whole fleet</span></span></button>
-        <button class="radio" role="radio" aria-checked="${f.scope === 'over'}" data-act="scope" data-v="over" ${f.sent ? 'disabled' : ''}><i class="ph ph-trend-up"></i><span><b>Over average (${VANS.filter(k => k > AVG).length})</b><span>Only the costly ones</span></span></button></div>
+        <button class="radio" role="radio" aria-checked="${f.scope === 'over'}" data-act="scope" data-v="over" ${f.sent ? 'disabled' : ''}><i class="ph ph-trend-up"></i><span><b>Above average (${ABOVE})</b><span>Only the costly ones</span></span></button></div>
         <label class="lbl-top" style="margin-top:16px">Format</label><div class="radio-row">
         <button class="radio" role="radio" aria-checked="${f.format === 'pdf'}" data-act="fmt" data-v="pdf"><i class="ph ph-file-pdf"></i><span><b>PDF</b><span>For reading</span></span></button>
         <button class="radio" role="radio" aria-checked="${f.format === 'xlsx'}" data-act="fmt" data-v="xlsx"><i class="ph ph-file-xls"></i><span><b>Spreadsheet</b><span>For your own sums</span></span></button></div>
@@ -779,8 +792,8 @@ const ASK = {
   fix: () => ({ title: 'Put B2 back in service?', body: 'Your checklist, photo and note are saved with the repair. Drivers see B2 as available again, and the 2 drivers who reported it get a message.', ok: 'Put back in service',
     run() { go(3, 'next'); } }),
   save: () => { const n = S.f.on.filter(Boolean).length;
-    return { title: `Save budgets for ${n} drivers?`, body: `${n === 25 ? 'All 25 drivers get' : `${n} of 25 drivers get`} a limit of ${S.f.limit.toLocaleString('en-US')} VND a month from 1 November${S.f.warn ? ', and you get a warning when someone reaches 80%' : ''}.${S.f.block ? ' Charging is blocked once a driver hits the limit.' : ''}${n === 24 ? ' The other driver has no limit.' : n < 25 ? ` The other ${25 - n} have no limit.` : ''}`, ok: 'Save budgets',
-      run() { S.f.saved = true; S.modal = okPop('Budgets saved', `${n} drivers start November with a ${S.f.limit.toLocaleString('en-US')} VND limit.`); keepScroll(); } }; },
+    return { title: `Save the budget for ${n} vans?`, body: `${n === 25 ? 'All 25 vans get' : `The ${n} vans you ticked get`} a limit of ${S.f.limit.toLocaleString('en-US')} VND a month from 1 November${S.f.warn ? ', and you get a warning when one reaches 80%' : ''}.${S.f.block ? ' Charging is blocked once a van hits the limit.' : ''}${n === 24 ? ' The other van stays without a limit.' : n < 25 ? ` The other ${25 - n} stay without a limit.` : ''}`, ok: 'Save budget',
+      run() { S.f.saved = true; S.modal = okPop('Budget saved', `${n} vans start November with a ${S.f.limit.toLocaleString('en-US')} VND limit. Their drivers have been told.`); keepScroll(); } }; },
   send: () => ({ title: 'Send the October report?', body: `The ${S.f.format === 'pdf' ? 'PDF' : 'spreadsheet'} covers ${reportVans().length} vans and goes to ${S.f.email}. You can't unsend it.`, ok: 'Send report',
     run() { const f = S.f; f.sending = true; render(false);
       setTimeout(() => { f.sending = false; f.sent = true; S.modal = okPop('Report sent', `Finance has the October report at ${f.email}.`); render(false); }, reduce ? 50 : 1400); } }),
@@ -830,9 +843,9 @@ document.addEventListener('click', e => {
     case 'tog': f[v] = !f[v]; render(false); break;
     case 'fmt': f.format = v; render(false); break;
     case 'scope': f.scope = v; render(false); break;
-    case 'pick': f.sel = +v; keepScroll('.vlist'); break;
-    case 'openvan': f.sel = +v; go(1, 'next'); $('.vrow.on')?.scrollIntoView({ block: 'nearest' }); break;
-    case 'van-on': f.on[+v] = !f.on[+v]; f.saved = false; keepScroll(); break;
+    case 'peek': f.peek = f.peek === +v ? null : +v; keepScroll(); break;
+    case 'preset': f.on = VANS.map(x => v === 'all' || (v === 'above' && x > AVG)); f.saved = false; keepScroll('.vlist'); break;
+    case 'van-on': f.on[+v] = !f.on[+v]; f.saved = false; keepScroll('.vlist'); break;
   }
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && S.modal) { S.modal = null; render(false); } });
