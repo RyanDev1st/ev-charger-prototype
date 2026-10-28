@@ -241,6 +241,9 @@ button:disabled { cursor: not-allowed; }
 .box { width: 26px; height: 26px; border-radius: 8px; border: 1.5px solid var(--line); display: grid; place-items: center; font-size: 16px; color: transparent; transition: all .2s var(--ease); flex: none; }
 .check[aria-checked="true"] .box { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .check[aria-checked="true"] .lbl { color: var(--muted); text-decoration: line-through; }
+.check.consent { border-top: 0; padding: 4px 0; font-size: 14px; font-weight: 600; cursor: pointer; }
+.check.consent[aria-checked="true"] .lbl { color: var(--ink); text-decoration: none; }
+.cta:disabled { opacity: .45; cursor: not-allowed; }
 .photo { width: 100%; height: 86px; border-radius: 12px; border: 1.5px dashed var(--line); display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-size: 14px; }
 .photo.has { border-style: solid; justify-content: flex-start; padding: 8px; gap: 12px; color: var(--ink); }
 .photo img { width: 68px; height: 68px; border-radius: 10px; object-fit: cover; }
@@ -306,6 +309,27 @@ textarea:focus, input:focus { outline: none; border-color: var(--accent-text); }
 @keyframes growx { from { transform: scaleX(0); } }
 .tip { display: flex; gap: 12px; align-items: flex-start; background: var(--warn-soft); color: var(--warn-text); border: 0; }
 .tip i { font-size: 20px; }
+/* Fleet: van list, budget table, report preview */
+.vans { display: grid; grid-template-columns: 1fr 1.05fr; gap: 14px; align-items: start; }
+.vlist { padding: 6px; max-height: 340px; overflow-y: auto; }
+.vrow { width: 100%; display: grid; grid-template-columns: 58px 1fr auto 46px; gap: 8px; align-items: center; padding: 8px 10px; border-radius: 10px; font-size: 13px; text-align: left; cursor: pointer; }
+.vrow .chip { font-size: 11px; padding: 2px 6px; justify-content: center; }
+.vrow:hover:not(.on) { background: var(--sunken); }
+.vrow.on { background: var(--ink); color: var(--bg); }
+.vrow.on .drv { color: inherit; opacity: .75; }
+.drv { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.vdetail { display: grid; gap: 8px; }
+.vdetail .vs { margin-top: 2px; }
+.vdetail .hbar { grid-template-columns: 170px 1fr 40px; padding: 4px 0; }
+.tip-line { display: flex; gap: 8px; font-size: 13px; line-height: 1.45; color: var(--warn-text); background: var(--warn-soft); padding: 10px 12px; border-radius: 12px; }
+.lchart { position: relative; display: flex; align-items: flex-end; gap: 5px; height: 130px; margin-top: 22px; border-bottom: 1px solid var(--muted); }
+.lb { flex: 1; border-radius: 4px 4px 0 0; background: color-mix(in srgb, var(--ink) 32%, var(--line)); transition: background .2s; }
+.lb:hover { filter: brightness(.88); }
+.lb.over { background: var(--danger); }
+.lb.ex, .hatch { background: repeating-linear-gradient(135deg, var(--line) 0 3px, transparent 3px 6px); outline: 1px dashed var(--line); outline-offset: -1px; }
+.lim { position: absolute; left: 0; right: 0; border-top: 2px solid var(--ink); z-index: 1; pointer-events: none; transition: bottom .12s; }
+.lim span { position: absolute; right: 0; bottom: 3px; font-size: 11px; font-weight: 700; background: var(--surface); padding: 0 4px; }
+.lx span.ex { opacity: .4; text-decoration: line-through; }
 .form-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; align-items: start; }
 .limit { font-size: 40px; letter-spacing: -.04em; font-weight: 600; margin: 4px 0 10px; }
 input[type="range"] { width: 100%; accent-color: var(--ink); height: 28px; }
@@ -385,6 +409,15 @@ const VANS = [2310, 2580, 1960, 2740, 2190, 2420, 4710, 2050, 2630, 2280, 2890, 
   2350, 2120, 2710, 2240, 2530, 1990, 2660, 2380, 2170, 2470, 2600, 1940];
 // Share of each van's spend at public fast chargers, in %. The rest is overnight depot charging.
 const FAST = [32, 28, 41, 25, 36, 30, 78, 22, 35, 40, 27, 33, 38, 29, 24, 44, 31, 26, 37, 21, 34, 39, 28, 30, 42];
+const DRIVERS = ['Trần Minh Khoa', 'Lê Thị Mai', 'Phạm Đức Anh', 'Hoàng Văn Nam', 'Đỗ Thị Lan', 'Vũ Quang Huy', 'Nguyễn Văn Tuấn',
+  'Bùi Thị Hằng', 'Đặng Văn Long', 'Ngô Thanh Sơn', 'Dương Thị Thảo', 'Lý Văn Phong', 'Trịnh Minh Đức', 'Phan Thị Ngọc', 'Hồ Văn Bình',
+  'Mai Xuân Trường', 'Tạ Thị Hương', 'Lâm Văn Hải', 'Châu Minh Tâm', 'Cao Thị Yến', 'Đinh Văn Lộc', 'Kiều Thị Nga', 'Lương Văn Thắng',
+  'Quách Minh Nhật', 'Tô Thị Diệp'];
+const AVG = 2450;
+const ORDER = VANS.map((_, i) => i).sort((a, b) => VANS[b] - VANS[a]);
+const vid = i => 'VAN-' + String(i + 1).padStart(2, '0');
+const vnd1 = k => (k * 1000).toLocaleString('en-US');
+const reportVans = () => ORDER.filter(k => S.f.scope === 'all' || VANS[k] > AVG);
 
 const SCN = {
   driver: {
@@ -394,7 +427,7 @@ const SCN = {
     steps: [
       { h: 'Find a charger', s: 'Phúc opens the app and sees the stations around him, each showing how many chargers are free. Riverside Mall is 1.2 km away with 3 of 6 free, so he taps it.', r: dFind },
       { h: 'Reserve charger B4', s: 'The station page lists the price, plug types and opening hours. He picks B4, sets it to stop at 80% and reserves it so nobody grabs the spot.', r: dStation },
-      { h: 'Plug in and charge', s: 'At the mall he plugs in and taps Start. From the café he watches the battery climb, the time left and the cost so far.', r: dCharge },
+      { h: 'Plug in and charge', s: 'At the mall he plugs in, taps Start and agrees to be charged automatically when it finishes. From the café he watches the battery climb, the time left and the cost so far.', r: dCharge },
       { h: 'Get the receipt', s: 'At 80% his phone buzzes. He unplugs, gets the receipt and emails it to himself for his expense claim.', r: dReceipt },
     ],
   },
@@ -415,9 +448,9 @@ const SCN = {
     outcome: 'Finance has the October report, and every driver starts November with a spending limit.',
     steps: [
       { h: 'Check the month', s: 'The fleet dashboard shows the total spend, energy used and a bar for each van. One bar sticks out.', r: fOverview },
-      { h: 'Look into VAN-07', s: 'VAN-07 cost almost twice the average. Its driver, Tuấn, mostly used expensive fast chargers in the city centre.', r: fVan },
-      { h: 'Set a budget', s: 'To avoid a repeat, she sets a 3,000,000 VND monthly limit per driver with a warning at 80%.', r: fBudget },
-      { h: 'Send the report', s: 'She exports the October report as a PDF and sends it to the finance team.', r: fExport },
+      { h: 'Look into VAN-07', s: 'The list of vans puts VAN-07 on top, at almost twice the average. Its driver, Tuấn, mostly used expensive fast chargers in the city centre.', r: fVan },
+      { h: 'Set budgets', s: 'She sets a 3,000,000 VND monthly limit for all 25 drivers, with a warning at 80%, and sees who would have gone over in October.', r: fBudget },
+      { h: 'Send the report', s: 'She exports the October report for the whole fleet as a PDF and sends it to the finance team.', r: fExport },
     ],
   },
 };
@@ -427,7 +460,7 @@ function fresh(scn) {
   return { scn, step: 0, dir: 'next', toast: null,
     d: { port: null, target: 80, charging: false, pct: 18, held: 900, done: false, emailed: false },
     t: { oos: false, checks: [false, false, false, false], photo: false },
-    f: { limit: 3000000, warn: true, tell: true, saved: false, format: 'pdf', email: 'finance@greenleaf.vn', sending: false, sent: false } };
+    f: { sel: 6, on: Array(25).fill(true), scope: 'all', block: false, limit: 3000000, warn: true, tell: true, saved: false, format: 'pdf', email: 'finance@greenleaf.vn', sending: false, sent: false } };
 }
 function clearTimers() { timers.forEach(clearInterval); timers = []; }
 
@@ -601,7 +634,7 @@ function fShell(active, body) {
 function fOverview() {
   const max = 5000, avg = 2450;
   return fShell(0, `<div class="main-head"><div><p class="sub">25 vans, 1 to 31 October</p><h2>October charging</h2></div>
-      <button class="cta ghost" style="width:auto;padding:0 20px;height:44px" data-act="nope"><i class="ph ph-calendar-blank"></i>October 2026</button></div>
+      <span class="chip dim" style="font-size:13.5px;padding:8px 14px"><i class="ph ph-calendar-blank"></i>October 2026</span></div>
     <div class="kpis"><div class="kpi lead"><span>Total spend</span><b class="mono">61,250,000 <small>VND</small></b></div>
       <div class="kpi"><span>Energy used</span><b class="mono">6,805 <small>kWh</small></b></div>
       <div class="kpi"><span>Charging sessions</span><b class="mono">742</b></div>
@@ -612,50 +645,79 @@ function fOverview() {
         <div class="chart">${[1, 2, 3, 4, 5].map(m => `<div class="grid" style="bottom:${m / 5 * 100}%"></div>`).join('')}
           <div class="avg" style="bottom:${avg / max * 100}%"><span>Average 2.45M</span></div>
           ${VANS.map((v, i) => { const id = String(i + 1).padStart(2, '0');
-            return `<div class="b ${i === 6 ? 'hi' : ''} ${i < 3 ? 'tl' : i > 21 ? 'tr' : ''}" style="--i:${i};height:${v / max * 100}%" data-tip="VAN-${id}&#10;${(v * 1000).toLocaleString('en-US')} VND&#10;${FAST[i]}% at fast chargers" role="button" aria-label="VAN-${id}, ${(v * 1000).toLocaleString('en-US')} VND" data-act="${i === 6 ? 'next' : 'nope'}"><i class="fast" style="height:${FAST[i]}%"></i></div>`; }).join('')}</div>
+            return `<div class="b ${i === 6 ? 'hi' : ''} ${i < 3 ? 'tl' : i > 21 ? 'tr' : ''}" style="--i:${i};height:${v / max * 100}%" data-tip="VAN-${id}&#10;${(v * 1000).toLocaleString('en-US')} VND&#10;${FAST[i]}% at fast chargers" role="button" aria-label="VAN-${id}, ${(v * 1000).toLocaleString('en-US')} VND" data-act="openvan" data-v="${i}"><i class="fast" style="height:${FAST[i]}%"></i></div>`; }).join('')}</div>
         <div class="xaxis">${VANS.map((_, i) => `<span class="${i === 6 ? 'hi' : ''}">${String(i + 1).padStart(2, '0')}</span>`).join('')}</div></div></div>`);
 }
 
 function fVan() {
-  const st = [['City Centre Hub (fast)', 14, 100], ['Ben Thanh Fast', 9, 64], ['GreenLeaf depot', 3, 21]];
-  return fShell(1, `<div class="main-head"><div class="bar-row"><button class="back" data-act="prev" aria-label="Back"><i class="ph ph-arrow-left"></i></button>
-      <div><p class="sub">Driver: Nguyễn Văn Tuấn</p><h2>VAN-07</h2></div></div><span class="chip warn">1.9x fleet average</span></div>
-    <div class="split"><div class="card"><h3>October spend</h3>
-        <div class="vs"><div><b class="mono">4,710,000</b><span class="sub">VAN-07, VND</span></div><div class="muted"><b class="mono">2,450,000</b><span class="sub">Fleet average</span></div></div></div>
-      <div class="card"><h3>How it charged</h3><div class="vs"><div><b class="mono">78%</b><span class="sub">at fast chargers</span></div><div class="muted"><b class="mono">26</b><span class="sub">sessions</span></div></div></div></div>
-    <div class="card"><h3>Where Tuấn charged</h3><div style="margin-top:8px">
-      ${st.map(([n, c, w], i) => `<div class="hbar"><span>${n}</span><i class="${i === 2 ? 'lo' : ''}" style="width:${w}%;animation-delay:${i * 90}ms"></i><b class="mono">${c}x</b></div>`).join('')}</div></div>
-    <div class="card tip"><i class="ph-fill ph-lightbulb"></i><p style="font-size:14px;line-height:1.5">Overnight charging at the depot costs about 40% less per kWh than the city-centre fast chargers.</p></div>
-    <div class="row-btns"><button class="cta pulse" data-act="next"><i class="ph ph-wallet"></i>Set driver budgets</button></div>`);
+  const f = S.f, i = f.sel, v = VANS[i], x = v / AVG;
+  const st = [['City-centre fast chargers', FAST[i] * .6], ['Other fast chargers', FAST[i] * .4], ['GreenLeaf depot, overnight', 100 - FAST[i]]];
+  const top = Math.max(...st.map(s => s[1]));
+  return fShell(1, `<div class="main-head"><div><p class="sub">25 vans, October. Highest spend first.</p><h2>Vans</h2></div>
+      <span class="chip warn">${VANS.filter(k => k > AVG * 1.15).length} vans more than 15% over average</span></div>
+    <div class="vans"><div class="card vlist" role="listbox" aria-label="Vans">${ORDER.map(k => `<button class="vrow ${k === i ? 'on' : ''}" role="option" aria-selected="${k === i}" data-act="pick" data-v="${k}">
+        <b class="mono">${vid(k)}</b><span class="drv">${DRIVERS[k]}</span><span class="mono">${(VANS[k] / 1000).toFixed(2)}M</span>
+        <span class="chip ${VANS[k] > AVG * 1.15 ? 'warn' : 'dim'} mono">${(VANS[k] / AVG).toFixed(1)}x</span></button>`).join('')}</div>
+      <div class="card vdetail"><div class="bar-row" style="justify-content:space-between"><div><h3 style="font-size:20px">${vid(i)}</h3><p class="sub">Driver: ${DRIVERS[i]}</p></div>
+          <span class="chip ${x > 1.15 ? 'warn' : 'dim'}">${x.toFixed(1)}x fleet average</span></div>
+        <div class="vs"><div><b class="mono">${vnd1(v)}</b><span class="sub">October, VND</span></div><div class="muted"><b class="mono">${Math.round(v / 82.5)}</b><span class="sub">sessions</span></div></div>
+        <h3 style="margin-top:6px">Where the money went</h3>
+        ${st.map(([n, p], k) => `<div class="hbar"><span>${n}</span><i class="${k === 2 ? 'lo' : ''}" style="width:${p / top * 100}%;animation-delay:${k * 90}ms"></i><b class="mono">${Math.round(p)}%</b></div>`).join('')}
+        ${FAST[i] > 50 ? `<p class="tip-line"><i class="ph-fill ph-lightbulb"></i>Depot charging overnight costs about 40% less per kWh than city-centre fast chargers.</p>` : ''}</div></div>
+    <div class="row-btns"><button class="cta pulse" data-act="next"><i class="ph ph-wallet"></i>Set budgets for all drivers</button></div>`);
+}
+
+const overText = (o, n) => o ? `<b style="color:var(--danger)">${o}</b> of ${n} would have gone over in October` : 'Nobody would have gone over in October';
+// Move the limit line and recolour bars while the slider is dragged, without a re-render.
+function paintLimit() {
+  const f = S.f, lim = $('#lim');
+  if (!lim) return;
+  lim.style.bottom = Math.min(100, f.limit / 5e6 * 100) + '%';
+  lim.firstChild.textContent = `Limit ${(f.limit / 1e6).toFixed(2)}M`;
+  let o = 0;
+  document.querySelectorAll('.lb').forEach((b, k) => { const bad = f.on[k] && +b.dataset.k * 1000 > f.limit; b.classList.toggle('over', bad); o += bad; });
+  $('#over-out').innerHTML = overText(o, f.on.filter(Boolean).length);
 }
 
 function fBudget() {
   const f = S.f;
-  return fShell(2, `<div class="main-head"><div class="bar-row"><button class="back" data-act="prev" aria-label="Back"><i class="ph ph-arrow-left"></i></button>
-      <div><p class="sub">Applies from 1 November to all 25 drivers</p><h2>Charging budget</h2></div></div></div>
+  const n = f.on.filter(Boolean).length, over = ORDER.filter(k => f.on[k] && VANS[k] * 1000 > f.limit);
+  return fShell(2, `<div class="main-head"><div><p class="sub">From 1 November, ${n} of 25 drivers</p><h2>Charging budgets</h2></div></div>
     <div class="form-grid"><div class="card"><label class="lbl-top" for="limit">Monthly limit per driver</label>
         <p class="limit mono" id="limit-out">${f.limit.toLocaleString('en-US')} <small style="font-size:18px;color:var(--muted)">VND</small></p>
         <input type="range" id="limit" min="1500000" max="6000000" step="250000" value="${f.limit}" data-act="limit">
-        <p class="help">October average was 2,450,000 VND. VAN-07 spent 4,710,000 VND.</p></div>
+        <p class="help">October average was 2,450,000 VND per van.</p></div>
       <div class="card">
         <button class="toggle" role="switch" aria-checked="${f.warn}" data-act="tog" data-v="warn"><span>Warn me when a driver reaches 80%</span><span class="sw"></span></button>
         <button class="toggle" role="switch" aria-checked="${f.tell}" data-act="tog" data-v="tell"><span>Send the driver the same warning</span><span class="sw"></span></button>
-        <button class="toggle" role="switch" aria-checked="false" data-act="nope"><span>Block charging at 100%</span><span class="sw"></span></button></div></div>
-    ${f.saved ? `<div class="card" style="display:flex;gap:12px;align-items:center;border-color:var(--accent-text)"><i class="ph-fill ph-check-circle" style="font-size:22px;color:var(--accent-text)"></i><p style="font-size:14.5px">Saved. All 25 drivers get a ${f.limit.toLocaleString('en-US')} VND limit from 1 November.</p></div>` : ''}
+        <button class="toggle" role="switch" aria-checked="${f.block}" data-act="tog" data-v="block"><span>Block charging at 100%</span><span class="sw"></span></button></div></div>
+    <div class="card"><div class="bar-row" style="justify-content:space-between"><div><h3>October spend against the limit</h3><span class="sub">Tap a bar to exempt that van</span></div>
+        <span class="sub" id="over-out">${overText(over.length, n)}</span></div>
+      <div class="lchart"><div class="lim" id="lim" style="bottom:${Math.min(100, f.limit / 5e6 * 100)}%"><span class="mono">Limit ${(f.limit / 1e6).toFixed(2)}M</span></div>
+        ${VANS.map((v, k) => `<button class="lb ${!f.on[k] ? 'ex' : v * 1000 > f.limit ? 'over' : ''}" style="height:${v / 5000 * 100}%" data-act="van-on" data-v="${k}" data-k="${v}"
+          aria-label="${vid(k)}, ${vnd1(v)} VND, ${f.on[k] ? 'limit applies' : 'exempt'}" title="${vid(k)} · ${DRIVERS[k]} · ${vnd1(v)} VND${f.on[k] ? '' : ' · exempt'}"></button>`).join('')}</div>
+      <div class="xaxis lx">${VANS.map((_, k) => `<span class="${f.on[k] ? '' : 'ex'}">${String(k + 1).padStart(2, '0')}</span>`).join('')}</div>
+      <div class="legend" style="margin-top:10px"><span><i style="background:var(--danger)"></i>Would have gone over</span><span><i style="background:color-mix(in srgb, var(--ink) 32%, var(--line))"></i>Within the limit</span><span><i class="hatch"></i>Exempt</span></div></div>
+    ${f.saved ? `<div class="card" style="display:flex;gap:12px;align-items:center;border-color:var(--accent-text)"><i class="ph-fill ph-check-circle" style="font-size:22px;color:var(--accent-text)"></i><p style="font-size:14.5px">Saved. ${n} drivers get a ${f.limit.toLocaleString('en-US')} VND limit from 1 November.</p></div>` : ''}
     <div class="row-btns">${f.saved ? `<button class="cta pulse" data-act="next"><i class="ph ph-export"></i>Export October report</button>`
-      : `<button class="cta dark" data-act="ask" data-v="save">Save budget</button>`}</div>`);
+      : `<button class="cta dark" data-act="ask" data-v="save" ${n ? '' : 'disabled'}>Save budgets for ${n} drivers</button>`}</div>`);
 }
 
 function fExport() {
   const f = S.f;
   let preview;
   if (f.sent) preview = `<div class="card" style="display:flex;gap:14px;align-items:center;border-color:var(--accent-text)"><span class="done-mark" style="width:48px;height:48px;font-size:24px;margin:0"><i class="ph-bold ph-check"></i></span>
-      <div><b style="font-size:16px">Report sent</b><p class="sub">October charging report (PDF, 6 pages) sent to ${f.email} at 4:32 pm.</p></div></div>`;
+      <div><b style="font-size:16px">Report sent</b><p class="sub">October charging report for ${reportVans().length} vans (${f.format === 'pdf' ? 'PDF' : 'spreadsheet'}) sent to ${f.email} at 4:32 pm.</p></div></div>`;
   else if (f.sending) preview = `<div class="card preview"><div class="skel" style="width:40%"></div><div class="skel"></div><div class="skel" style="width:85%"></div><div class="skel" style="width:60%"></div></div>`;
-  else preview = `<div class="card"><dl class="kv"><dt>Covers</dt><dd>1 to 31 October, 25 vans</dd><dt>Includes</dt><dd>Spend per van, sessions, stations</dd><dt>Total</dt><dd class="mono">61,250,000 VND</dd></dl></div>`;
-  return fShell(3, `<div class="main-head"><div class="bar-row"><button class="back" data-act="prev" aria-label="Back"><i class="ph ph-arrow-left"></i></button>
-      <div><p class="sub">October 2026</p><h2>Export report</h2></div></div></div>
-    <div class="form-grid"><div class="card"><label class="lbl-top">Format</label><div class="radio-row">
+  else { const vs = reportVans(), tot = vs.reduce((s, k) => s + VANS[k], 0);
+    preview = `<div class="card"><h3>In the report</h3><dl class="kv" style="margin-top:8px"><dt>Covers</dt><dd>${vs.length} vans, 1 to 31 October</dd>
+      <dt>Total spend</dt><dd class="mono">${vnd1(tot)} VND</dd><dt>Flagged</dt><dd>${vs.filter(k => VANS[k] > AVG * 1.15).length} vans more than 15% over average</dd>
+      <dt>November limits</dt><dd>${f.saved ? `${f.limit.toLocaleString('en-US')} VND for ${f.on.filter(Boolean).length} drivers` : 'Not set yet'}</dd></dl></div>`; }
+  return fShell(3, `<div class="main-head"><div><p class="sub">October 2026</p><h2>Fleet report</h2></div></div>
+    <div class="form-grid"><div class="card"><label class="lbl-top">Vans</label><div class="radio-row">
+        <button class="radio" role="radio" aria-checked="${f.scope === 'all'}" data-act="scope" data-v="all" ${f.sent ? 'disabled' : ''}><i class="ph ph-van"></i><span><b>All 25 vans</b><span>Whole fleet</span></span></button>
+        <button class="radio" role="radio" aria-checked="${f.scope === 'over'}" data-act="scope" data-v="over" ${f.sent ? 'disabled' : ''}><i class="ph ph-trend-up"></i><span><b>Over average (${VANS.filter(k => k > AVG).length})</b><span>Only the costly ones</span></span></button></div>
+        <label class="lbl-top" style="margin-top:16px">Format</label><div class="radio-row">
         <button class="radio" role="radio" aria-checked="${f.format === 'pdf'}" data-act="fmt" data-v="pdf"><i class="ph ph-file-pdf"></i><span><b>PDF</b><span>For reading</span></span></button>
         <button class="radio" role="radio" aria-checked="${f.format === 'xlsx'}" data-act="fmt" data-v="xlsx"><i class="ph ph-file-xls"></i><span><b>Spreadsheet</b><span>For your own sums</span></span></button></div>
         <div style="margin-top:16px"><label class="lbl-top" for="email">Send to</label><input type="email" id="email" value="${f.email}" ${f.sent ? 'disabled' : ''}>
@@ -686,7 +748,7 @@ function render(animate = true) {
   dev.className = 'device ' + c.device;
   $('#screen').innerHTML = `<div class="view ${animate ? 'in-' + S.dir : ''}">${c.steps[S.step].r()}</div>${S.toast ? `<div class="toast"><i class="ph-fill ph-info"></i>${S.toast}</div>` : ''}${modal()}`;
   renderRail(); renderTabs(); fit();
-  if (S.modal) $('.sheet [data-act="m-ok"]').focus({ preventScroll: true });
+  if (S.modal) $(S.modal.consent ? '.sheet .consent' : '.sheet [data-act="m-ok"]').focus({ preventScroll: true });
   if (S.scn === 'driver' && S.step === 2) driverTimers();
   history.replaceState(null, '', '#' + S.scn + (S.step ? '/' + (S.step + 1) : ''));
 }
@@ -709,15 +771,17 @@ const okPop = (title, body) => ({ done: true, title, body, ok: 'OK' });
 const ASK = {
   reserve: () => ({ title: `Reserve ${S.d.port} for 15 minutes?`, body: `Reserving is free. Nobody else can start on ${S.d.port} until you get there. If you don't plug in within 15 minutes, it goes back to other drivers.`, ok: `Reserve ${S.d.port}`,
     run() { S.step = 2; S.dir = 'next'; S.modal = okPop(`${S.d.port} is reserved`, 'It\'s held for you for 15 minutes. Drive over and plug in.'); render(); } }),
-  start: () => ({ title: 'Start charging?', body: `Charging stops at ${S.d.target === 100 ? 'full' : S.d.target === 'amt' ? '200,000 VND' : '80%'}. Visa ending 4821 pays 9,000 VND per kWh when you finish.`, ok: 'Start charging',
+  start: () => ({ title: 'Start charging?', body: `Charging stops by itself at ${S.d.target === 100 ? 'full' : S.d.target === 'amt' ? '200,000 VND' : '80%'}. When it stops, your Visa ending 4821 is charged automatically at 9,000 VND per kWh (about ${S.d.target === 100 ? '385,200' : S.d.target === 'amt' ? '200,000' : '291,600'} VND). You won't be asked again.`, ok: 'Start charging',
+    consent: 'I agree to be charged automatically when charging finishes.',
     run() { S.d.charging = true; render(false); } }),
   oos: () => ({ title: 'Take B2 out of service?', body: 'Drivers won\'t see B2 as available until you put it back. Anyone heading there now will be told to pick another charger.', ok: 'Mark out of service', dark: true,
     run() { S.t.oos = true; S.modal = okPop('B2 is out of service', 'Drivers no longer see B2 as available. Nobody will be sent there.'); render(false); } }),
   fix: () => ({ title: 'Put B2 back in service?', body: 'Your checklist, photo and note are saved with the repair. Drivers see B2 as available again, and the 2 drivers who reported it get a message.', ok: 'Put back in service',
     run() { go(3, 'next'); } }),
-  save: () => ({ title: 'Save this budget?', body: `All 25 drivers get a limit of ${S.f.limit.toLocaleString('en-US')} VND a month from 1 November${S.f.warn ? ', and you get a warning when someone reaches 80%' : ''}.`, ok: 'Save budget',
-    run() { S.f.saved = true; S.modal = okPop('Budget saved', `Drivers start November with a ${S.f.limit.toLocaleString('en-US')} VND limit.`); render(false); } }),
-  send: () => ({ title: 'Send the October report?', body: `The ${S.f.format === 'pdf' ? 'PDF' : 'spreadsheet'} goes to ${S.f.email}. You can't unsend it.`, ok: 'Send report',
+  save: () => { const n = S.f.on.filter(Boolean).length;
+    return { title: `Save budgets for ${n} drivers?`, body: `${n === 25 ? 'All 25 drivers get' : `${n} of 25 drivers get`} a limit of ${S.f.limit.toLocaleString('en-US')} VND a month from 1 November${S.f.warn ? ', and you get a warning when someone reaches 80%' : ''}.${S.f.block ? ' Charging is blocked once a driver hits the limit.' : ''}${n === 24 ? ' The other driver has no limit.' : n < 25 ? ` The other ${25 - n} have no limit.` : ''}`, ok: 'Save budgets',
+      run() { S.f.saved = true; S.modal = okPop('Budgets saved', `${n} drivers start November with a ${S.f.limit.toLocaleString('en-US')} VND limit.`); keepScroll(); } }; },
+  send: () => ({ title: 'Send the October report?', body: `The ${S.f.format === 'pdf' ? 'PDF' : 'spreadsheet'} covers ${reportVans().length} vans and goes to ${S.f.email}. You can't unsend it.`, ok: 'Send report',
     run() { const f = S.f; f.sending = true; render(false);
       setTimeout(() => { f.sending = false; f.sent = true; S.modal = okPop('Report sent', `Finance has the October report at ${f.email}.`); render(false); }, reduce ? 50 : 1400); } }),
 };
@@ -726,7 +790,15 @@ function modal() {
   if (!m) return '';
   return `<div class="scrim" data-act="m-cancel"></div><div class="sheet ${m.done ? 'is-done' : ''}" role="${m.done ? 'status' : 'alertdialog'}" aria-modal="true" aria-labelledby="m-t">
     ${m.done ? '<span class="m-ok"><i class="ph-bold ph-check"></i></span>' : ''}<h3 id="m-t">${m.title}</h3><p>${m.body}</p>
-    <button class="cta ${m.dark ? 'dark' : ''}" data-act="m-ok">${m.ok}</button>${m.done ? '' : '<button class="cta ghost" data-act="m-cancel">Cancel</button>'}</div>`;
+    ${m.consent ? `<button class="check consent" role="checkbox" aria-checked="${!!m.agreed}" data-act="m-agree"><span class="box"><i class="ph-bold ph-check"></i></span><span class="lbl">${m.consent}</span></button>` : ''}
+    <button class="cta ${m.dark ? 'dark' : ''} ${m.consent && m.agreed ? 'pulse' : ''}" data-act="m-ok" ${m.consent && !m.agreed ? 'disabled' : ''}>${m.ok}</button>${m.done ? '' : '<button class="cta ghost" data-act="m-cancel">Cancel</button>'}</div>`;
+}
+
+// Re-render without losing the scroll position of a long list.
+function keepScroll(sel) {
+  const sels = sel ? ['.main', sel] : ['.main'], ys = sels.map(s => $(s)?.scrollTop || 0);
+  render(false);
+  sels.forEach((s, i) => { const el = $(s); if (el) el.scrollTop = ys[i]; });
 }
 
 function toast(msg) { S.toast = msg; render(false); setTimeout(() => { if (S.toast === msg) { S.toast = null; const t = $('.toast'); if (t) t.remove(); } }, 2200); }
@@ -750,16 +822,22 @@ document.addEventListener('click', e => {
     case 'ask': if ($('#email')) f.email = $('#email').value || f.email; S.modal = ASK[v](); render(false); break;
     case 'm-ok': { const m = S.modal; S.modal = null; m.run ? m.run() : render(false); break; }
     case 'm-cancel': S.modal = null; render(false); break;
+    case 'm-agree': { const on = S.modal.agreed = !S.modal.agreed, ok = $('.sheet [data-act="m-ok"]');
+      a.setAttribute('aria-checked', on); ok.disabled = !on; ok.classList.toggle('pulse', on); break; }
     case 'email': d.emailed = true; S.modal = okPop('Receipt sent', 'It\'s in phuc.levan@gmail.com, ready for your expense claim.'); render(false); break;
     case 'check': t.checks[+v] = !t.checks[+v]; render(false); break;
     case 'photo': t.photo = true; render(false); break;
     case 'tog': f[v] = !f[v]; render(false); break;
     case 'fmt': f.format = v; render(false); break;
+    case 'scope': f.scope = v; render(false); break;
+    case 'pick': f.sel = +v; keepScroll('.vlist'); break;
+    case 'openvan': f.sel = +v; go(1, 'next'); $('.vrow.on')?.scrollIntoView({ block: 'nearest' }); break;
+    case 'van-on': f.on[+v] = !f.on[+v]; f.saved = false; keepScroll(); break;
   }
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && S.modal) { S.modal = null; render(false); } });
 document.addEventListener('input', e => {
-  if (e.target.id === 'limit') { S.f.limit = +e.target.value; S.f.saved = false; $('#limit-out').firstChild.textContent = S.f.limit.toLocaleString('en-US') + ' '; }
+  if (e.target.id === 'limit') { S.f.limit = +e.target.value; S.f.saved = false; $('#limit-out').firstChild.textContent = S.f.limit.toLocaleString('en-US') + ' '; paintLimit(); }
 });
 
 // Scale the device to fit the space it has.
