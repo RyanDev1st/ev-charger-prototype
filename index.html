@@ -311,14 +311,30 @@ textarea:focus, input:focus { outline: none; border-color: var(--accent-text); }
 .tip i { font-size: 20px; }
 /* Fleet: van peek, tick list, budget chart */
 .b.sel { outline: 2px solid var(--ink); outline-offset: 2px; }
-.peek { display: grid; grid-template-columns: auto auto auto 1fr; gap: 26px; align-items: center; }
+.b.pick, .b.pick.hi { background: var(--line); }
+.b.pick.on { background: var(--accent); }
+.ov-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; align-items: start; }
+.dchart { display: flex; align-items: flex-end; gap: 3px; height: 150px; border-bottom: 1px solid var(--muted); }
+.db { flex: 1; border-radius: 3px 3px 0 0; background: color-mix(in srgb, var(--ink) 45%, var(--line)); transform-origin: bottom; animation: grow .6s var(--ease) both; animation-delay: calc(var(--i) * 12ms); }
+.db.we { opacity: .45; }
+.db:hover { filter: brightness(1.25); }
+.dx { justify-content: space-between; }
+.dx span { flex: none; }
+.share-row { display: grid; grid-template-columns: 64px 1fr; align-items: center; gap: 10px; margin-top: 12px; font-size: 13px; }
+.share { display: flex; height: 26px; border-radius: 7px; overflow: hidden; font-size: 11.5px; font-weight: 700; }
+.share i { display: flex; align-items: center; padding: 0 8px; font-style: normal; }
+.share .fast { background: color-mix(in srgb, var(--ink) 55%, var(--line)); color: var(--bg); }
+.share .depot { flex: 1; background: var(--accent); color: var(--accent-ink); }
+.peek { display: grid; grid-template-columns: auto auto auto 1fr auto; gap: 22px; align-items: center; }
+.peek-tick { width: auto; height: 40px; padding: 0 16px; font-size: 13.5px; }
 .peek > div > b { display: block; font-size: 19px; letter-spacing: -.02em; }
 .peek .tip-line { grid-column: 1 / -1; }
 .peek.empty { display: flex; gap: 10px; color: var(--muted); }
 .peek.empty i { font-size: 20px; }
 .split-bar { display: block; height: 8px; border-radius: 999px; background: var(--line); overflow: hidden; margin-top: 6px; }
 .split-bar i { display: block; height: 100%; background: color-mix(in srgb, var(--ink) 55%, var(--line)); }
-.presets { width: auto; min-width: 340px; }
+.presets { width: auto; min-width: 400px; }
+.presets button { white-space: nowrap; }
 .vlist { padding: 4px 8px; max-height: 360px; overflow-y: auto; }
 .vrow { width: 100%; display: grid; grid-template-columns: 22px 58px 1fr 90px 52px 44px; gap: 12px; align-items: center; padding: 8px 4px; border-bottom: 1px solid var(--line); font-size: 13px; text-align: left; cursor: pointer; }
 .vrow.head { position: sticky; top: 0; z-index: 1; background: var(--surface); font-size: 11.5px; font-weight: 600; color: var(--muted); cursor: default; }
@@ -453,8 +469,8 @@ const SCN = {
     goal: 'Finance wants October\'s charging costs for all <b>25 vans</b> by the end of the day.',
     outcome: 'Finance has the October report, and the 11 costliest vans start November with a spending limit.',
     steps: [
-      { h: 'Check the month', s: 'The dashboard shows the total spend and a bar for each van. VAN-07 sticks out. Tapping it shows its driver, Tuấn, mostly used expensive city-centre fast chargers.', r: fOverview },
-      { h: 'Pick the vans', s: 'She ticks the 11 vans that spent more than average, VAN-07 included.', r: fVan },
+      { h: 'Check the month', s: 'The dashboard shows October\'s total, the spend per day and where the money went. Fast chargers were 1 in 5 sessions but over a third of the spend.', r: fOverview },
+      { h: 'Pick the vans', s: 'Spend per van shows VAN-07 at almost twice the average. Tapping it shows its driver, Tuấn, mostly used city-centre fast chargers. She keeps the 11 above-average vans in the budget.', r: fVan },
       { h: 'Set their budget', s: 'For those 11 vans she sets a 3,000,000 VND monthly limit with a warning at 80%, and sees which ones would have gone over in October.', r: fBudget },
       { h: 'Send the report', s: 'She exports the October report for the whole fleet as a PDF and sends it to the finance team.', r: fExport },
     ],
@@ -639,47 +655,58 @@ function fShell(active, body) {
 
 function vanPeek(i) {
   if (i == null) return `<div class="card peek empty"><i class="ph ph-hand-tap"></i><p class="sub">Tap a bar to see who drives that van and where its money went.</p></div>`;
-  const v = VANS[i], x = v / AVG;
+  const f = S.f, v = VANS[i], x = v / AVG;
   return `<div class="card peek"><div><b class="mono">${vid(i)}</b><span class="sub">${DRIVERS[i]}</span></div>
       <div><b class="mono">${vnd1(v)}</b><span class="sub">VND in October</span></div>
       <div><b class="mono" style="${x > 1.15 ? 'color:var(--warn-text)' : ''}">${x.toFixed(1)}x</b><span class="sub">fleet average</span></div>
       <div><span class="sub">Fast chargers ${FAST[i]}%, depot ${100 - FAST[i]}%</span><span class="split-bar"><i style="width:${FAST[i]}%"></i></span></div>
+      <button class="cta ${f.on[i] ? 'ghost' : 'dark'} peek-tick" data-act="van-on" data-v="${i}"><i class="ph ${f.on[i] ? 'ph-minus-circle' : 'ph-plus-circle'}"></i>${f.on[i] ? 'Remove from budget' : 'Add to budget'}</button>
       ${FAST[i] > 50 ? `<p class="tip-line"><i class="ph-fill ph-lightbulb"></i>${DRIVERS[i].split(' ').pop()} mostly used city-centre fast chargers. Charging overnight at the depot costs about 40% less per kWh.</p>` : ''}</div>`;
 }
 
+// Fleet total per day in thousands of VND (sums to 61,250). 1 October 2026 is a Thursday.
+const DAYS = [2273, 2453, 1224, 1157, 2363, 2418, 2145, 2160, 2429, 1290, 1154, 2246, 2455, 2253, 2096, 2338, 1338, 1191, 2140, 2413,
+  2369, 2107, 2219, 1349, 1254, 2092, 2312, 2444, 2189, 2123, 1256];
+const FAST_SPEND = Math.round(VANS.reduce((s, v, i) => s + v * FAST[i], 0) / 61250), FAST_SESS = 21;
+
 function fOverview() {
-  const f = S.f, max = 5000;
+  const top = 2500;
   return fShell(0, `<div class="main-head"><div><p class="sub">25 vans, 1 to 31 October</p><h2>October charging</h2></div>
       <span class="chip dim" style="font-size:13.5px;padding:8px 14px"><i class="ph ph-calendar-blank"></i>October 2026</span></div>
     <div class="kpis"><div class="kpi lead"><span>Total spend</span><b class="mono">61,250,000 <small>VND</small></b></div>
       <div class="kpi"><span>Energy used</span><b class="mono">6,805 <small>kWh</small></b></div>
       <div class="kpi"><span>Charging sessions</span><b class="mono">742</b></div>
       <div class="kpi"><span>Average per van</span><b class="mono">2.45M <small>VND</small></b></div></div>
-    <div class="card chart-card"><div class="bar-row" style="justify-content:space-between"><div><h3>Spend per van</h3><span class="sub">Million VND, October. Tap a bar to see the van.</span></div>
-        <div class="legend"><span><i style="background:color-mix(in srgb, var(--ink) 38%, var(--line))"></i>Fast chargers</span><span><i style="background:var(--line)"></i>Depot, overnight</span></div></div>
-      <div class="chart-wrap"><div class="yaxis">${[0, 1, 2, 3, 4, 5].map(m => `<span style="bottom:${m / 5 * 100}%">${m ? m + 'M' : '0'}</span>`).join('')}</div>
-        <div class="chart">${[1, 2, 3, 4, 5].map(m => `<div class="grid" style="bottom:${m / 5 * 100}%"></div>`).join('')}
-          <div class="avg" style="bottom:${AVG / max * 100}%"><span>Average 2.45M</span></div>
-          ${VANS.map((v, i) => `<div class="b ${i === 6 ? 'hi' : ''} ${i === f.peek ? 'sel' : ''} ${i < 3 ? 'tl' : i > 21 ? 'tr' : ''}" style="--i:${i};height:${v / max * 100}%"
-            data-tip="${vid(i)}&#10;${vnd1(v)} VND&#10;${FAST[i]}% at fast chargers" role="button" aria-pressed="${i === f.peek}" aria-label="${vid(i)}, ${vnd1(v)} VND" data-act="peek" data-v="${i}"><i class="fast" style="height:${FAST[i]}%"></i></div>`).join('')}</div>
-        <div class="xaxis">${VANS.map((_, i) => `<span class="${i === 6 ? 'hi' : ''}">${String(i + 1).padStart(2, '0')}</span>`).join('')}</div></div></div>
-    ${vanPeek(f.peek)}
-    <div class="row-btns"><button class="cta pulse" data-act="next"><i class="ph ph-check-square"></i>Choose vans for a budget</button></div>`);
+    <div class="ov-grid"><div class="card"><div class="bar-row" style="justify-content:space-between"><h3>Spend per day</h3><span class="sub">Weekends lighter</span></div>
+        <div class="chart-wrap"><div class="yaxis" style="height:150px">${[0, 1, 2].map(m => `<span style="bottom:${m * 1000 / top * 100}%">${m ? m + 'M' : '0'}</span>`).join('')}</div>
+          <div class="dchart">${DAYS.map((d, i) => `<div class="db ${[2, 3].includes(i % 7) ? 'we' : ''}" style="--i:${i};height:${d / top * 100}%" title="${i + 1} October: ${vnd1(d)} VND"></div>`).join('')}</div>
+          <div class="xaxis dx"><span>1 Oct</span><span>15 Oct</span><span>31 Oct</span></div></div></div>
+      <div class="card"><h3>Where the money went</h3>
+        <div class="share-row"><span>Spend</span><div class="share"><i class="fast" style="width:${FAST_SPEND}%">${FAST_SPEND}%</i><i class="depot">${100 - FAST_SPEND}%</i></div></div>
+        <div class="share-row"><span>Sessions</span><div class="share"><i class="fast" style="width:${FAST_SESS}%">${FAST_SESS}%</i><i class="depot">${100 - FAST_SESS}%</i></div></div>
+        <div class="legend" style="margin-top:10px"><span><i style="background:color-mix(in srgb, var(--ink) 55%, var(--line))"></i>Fast chargers</span><span><i style="background:var(--accent)"></i>Depot, overnight</span></div>
+        <p class="tip-line" style="margin-top:12px"><i class="ph-fill ph-lightbulb"></i>Fast chargers were 1 in 5 sessions but over a third of the spend.</p></div></div>
+    <div class="row-btns"><button class="cta pulse" data-act="next"><i class="ph ph-van"></i>See spend per van</button></div>`);
 }
 
 const ABOVE = VANS.filter(v => v > AVG).length;
 const picked = () => ORDER.filter(k => S.f.on[k]);
 
 function fVan() {
-  const f = S.f, sel = picked(), n = sel.length, tot = sel.reduce((s, k) => s + VANS[k], 0);
+  const f = S.f, sel = picked(), n = sel.length, tot = sel.reduce((s, k) => s + VANS[k], 0), max = 5000;
   const preset = n === 25 ? 'all' : !n ? 'none' : VANS.every((v, k) => f.on[k] === v > AVG) ? 'above' : '';
-  return fShell(1, `<div class="main-head"><div><p class="sub">Tick the vans that get a November budget</p><h2>Pick the vans</h2></div>
+  return fShell(1, `<div class="main-head"><div><p class="sub">Lit vans get a November budget</p><h2>Pick the vans</h2></div>
       <div class="seg presets">${[['above', `Above average (${ABOVE})`], ['all', 'All 25'], ['none', 'Clear']].map(([k, l]) => `<button data-act="preset" data-v="${k}" aria-pressed="${preset === k}">${l}</button>`).join('')}</div></div>
-    <div class="card vlist"><div class="vrow head"><span></span><span>Van</span><span>Driver</span><span>Fast chargers</span><span>October</span><span>vs avg</span></div>
-      ${ORDER.map(k => `<button class="vrow" role="checkbox" aria-checked="${f.on[k]}" data-act="van-on" data-v="${k}"><span class="box"><i class="ph-bold ph-check"></i></span>
-        <b class="mono">${vid(k)}</b><span class="drv">${DRIVERS[k]}</span><span class="split-bar" title="${FAST[k]}% at fast chargers"><i style="width:${FAST[k]}%"></i></span>
-        <span class="mono">${(VANS[k] / 1000).toFixed(2)}M</span><span class="chip ${VANS[k] > AVG * 1.15 ? 'warn' : 'dim'} mono">${(VANS[k] / AVG).toFixed(1)}x</span></button>`).join('')}</div>
-    <div class="row-btns" style="justify-content:space-between;align-items:center"><p class="sub"><b style="color:var(--ink)">${n} vans</b> ticked, ${vnd1(tot)} VND in October</p>
+    <div class="card chart-card"><div class="bar-row" style="justify-content:space-between"><span class="sub">Million VND. Tap a bar to see the van.</span>
+        <div class="legend"><span><i style="background:var(--accent)"></i>In the budget</span><span><i style="background:var(--line)"></i>Not in it</span></div></div>
+      <div class="chart-wrap"><div class="yaxis">${[0, 1, 2, 3, 4, 5].map(m => `<span style="bottom:${m / 5 * 100}%">${m ? m + 'M' : '0'}</span>`).join('')}</div>
+        <div class="chart">${[1, 2, 3, 4, 5].map(m => `<div class="grid" style="bottom:${m / 5 * 100}%"></div>`).join('')}
+          <div class="avg" style="bottom:${AVG / max * 100}%"><span>Average 2.45M</span></div>
+          ${VANS.map((v, i) => `<div class="b pick ${f.on[i] ? 'on' : ''} ${i === 6 ? 'hi' : ''} ${i === f.peek ? 'sel' : ''} ${i < 3 ? 'tl' : i > 21 ? 'tr' : ''}" style="--i:${i};height:${v / max * 100}%"
+            data-tip="${vid(i)}&#10;${vnd1(v)} VND&#10;${f.on[i] ? 'In the budget' : 'Not in the budget'}" role="button" aria-pressed="${i === f.peek}" aria-label="${vid(i)}, ${vnd1(v)} VND" data-act="peek" data-v="${i}"></div>`).join('')}</div>
+        <div class="xaxis">${VANS.map((_, i) => `<span class="${f.on[i] ? 'hi' : ''}">${String(i + 1).padStart(2, '0')}</span>`).join('')}</div></div></div>
+    ${vanPeek(f.peek)}
+    <div class="row-btns" style="justify-content:space-between;align-items:center"><p class="sub"><b style="color:var(--ink)">${n} vans</b> picked, ${vnd1(tot)} VND in October</p>
       <button class="cta pulse" data-act="next" ${n ? '' : 'disabled'}><i class="ph ph-wallet"></i>Set a budget for ${n} vans</button></div>`);
 }
 
