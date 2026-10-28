@@ -454,7 +454,7 @@ function fresh(scn) {
   return { scn, step: 0, dir: 'next', toast: null,
     d: { port: null, target: 80, charging: false, pct: 18, held: 900, done: false, emailed: false },
     t: { oos: false, checks: [false, false, false, false], photo: false },
-    f: { on: VANS.map(v => v > AVG), limit: 3000000, warn: true, saved: false, email: 'finance@greenleaf.vn', sending: false, sent: false } };
+    f: { on: Array(25).fill(false), limit: 3000000, warn: true, saved: false, email: 'finance@greenleaf.vn', sending: false, sent: false } };
 }
 function clearTimers() { timers.forEach(clearInterval); timers = []; }
 
@@ -648,7 +648,9 @@ function fOverview() {
       : `<div class="row-btns"><button class="cta pulse" data-act="next"><i class="ph ph-wallet"></i>Set budgets</button></div>`}`);
 }
 
-const overText = (n, o) => `<b style="color:var(--ink)">${n} vans</b> get a budget. ${o ? `<b style="color:var(--danger)">${o}</b> of them would have gone over in October.` : 'None would have gone over in October.'}`;
+const overText = (n, o) => !n ? 'No vans switched on yet.'
+  : n === 1 ? `<b style="color:var(--ink)">1 van</b> gets a budget. ${o ? 'It <b style="color:var(--danger)">would have gone over</b>' : 'It would have stayed within it'} in October.`
+  : `<b style="color:var(--ink)">${n} vans</b> get a budget. ${o ? `<b style="color:var(--danger)">${o}</b> of them would have gone over in October.` : 'None would have gone over in October.'}`;
 // Update the rows while the slider is dragged, without a re-render.
 function paintLimit() {
   const f = S.f;
@@ -663,8 +665,8 @@ function paintLimit() {
 function fBudget() {
   const f = S.f, sel = picked(), n = sel.length, over = sel.filter(k => VANS[k] * 1000 > f.limit).length;
   const preset = n === 25 ? 'all' : !n ? 'none' : VANS.every((v, k) => f.on[k] === v > AVG) ? 'above' : '';
-  return fShell(1, `<div class="main-head"><div><p class="sub">Monthly limits from 1 November</p><h2>Budgets</h2></div>
-      <div class="seg presets">${[['above', 'Above average'], ['all', 'All'], ['none', 'None']].map(([k, l]) => `<button data-act="preset" data-v="${k}" aria-pressed="${preset === k}">${l}</button>`).join('')}</div></div>
+  return fShell(1, `<div class="main-head"><div><p class="sub">Switch on the vans that get a limit</p><h2>Budgets</h2></div>
+      <div class="seg presets">${[['above', `Above average (${VANS.filter(v => v > AVG).length})`], ['all', 'All'], ['none', 'None']].map(([k, l]) => `<button class="${!n && k === 'above' ? 'pulse' : ''}" data-act="preset" data-v="${k}" aria-pressed="${preset === k}">${l}</button>`).join('')}</div></div>
     <div class="card limit-card"><div><label class="lbl-top" for="limit">Limit per van</label>
         <p class="limit mono" id="limit-out">${f.limit.toLocaleString('en-US')} <small style="font-size:18px;color:var(--muted)">VND</small></p></div>
       <input type="range" id="limit" min="1500000" max="6000000" step="250000" value="${f.limit}" data-act="limit">
@@ -815,7 +817,7 @@ function printSheet(scn) {
   S = fresh(scn);
   Object.assign(S.d, { port: 'B4', charging: true, pct: 57 });
   Object.assign(S.t, { oos: true, checks: [true, true, true, true], photo: true });
-  Object.assign(S.f, { saved: true });
+  Object.assign(S.f, { saved: true, on: VANS.map(v => v > AVG) });
   const W = c.device === 'phone' ? 390 : 1060, H = c.device === 'phone' ? 800 : 700, fw = c.device === 'phone' ? 250 : 400;
   const k = (fw - 16) / (W - 24);
   const frames = c.steps.map((st, i) => {
