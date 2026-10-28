@@ -881,7 +881,7 @@ function printSheet(scn) {
   S = fresh(scn);
   Object.assign(S.d, { port: 'B4', charging: true, pct: 57 });
   Object.assign(S.t, { oos: true, checks: [true, true, true, true], photo: true });
-  Object.assign(S.f, { saved: true });
+  Object.assign(S.f, { saved: true, peek: 6 });
   const W = c.device === 'phone' ? 390 : 1060, H = c.device === 'phone' ? 800 : 700, fw = c.device === 'phone' ? 250 : 400;
   const k = (fw - 16) / (W - 24);
   const frames = c.steps.map((st, i) => {
